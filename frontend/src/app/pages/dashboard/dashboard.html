@@ -1,1 +1,111 @@
-<p>dashboard works!</p>
+<div class="dashboard-container">
+  <div class="header">
+    <h1>Dashboard Overview</h1>
+    <p>Welcome back! Here's what's happening with your inventory today.</p>
+  </div>
+
+  <div *ngIf="loading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Loading dashboard statistics...</p>
+  </div>
+
+  <div *ngIf="error" class="error-state">
+    <p>{{ error }}</p>
+    <button (click)="fetchDashboardStats()" class="btn btn-primary">Retry</button>
+  </div>
+
+  <div *ngIf="!loading && !error && stats" class="stats-grid">
+    <!-- Sales & Orders -->
+    <div class="stat-card highlight">
+      <div class="stat-icon">
+        <i class="fas fa-shopping-cart"></i>
+      </div>
+      <div class="stat-details">
+        <span class="stat-title">Total Orders</span>
+        <span class="stat-value">{{ stats.totalOrders }}</span>
+      </div>
+    </div>
+
+    <div class="stat-card warning">
+      <div class="stat-icon">
+        <i class="fas fa-clock"></i>
+      </div>
+      <div class="stat-details">
+        <span class="stat-title">Pending Orders</span>
+        <span class="stat-value">{{ stats.pendingOrders }}</span>
+      </div>
+    </div>
+
+    <div class="stat-card danger">
+      <div class="stat-icon">
+        <i class="fas fa-exclamation-triangle"></i>
+      </div>
+      <div class="stat-details">
+        <span class="stat-title">Low Stock Items</span>
+        <span class="stat-value">{{ stats.lowStockProducts }}</span>
+      </div>
+    </div>
+
+    <!-- Inventory & Products -->
+    <div class="stat-card">
+      <div class="stat-icon">
+        <i class="fas fa-box"></i>
+      </div>
+      <div class="stat-details">
+        <span class="stat-title">Total Products</span>
+        <span class="stat-value">{{ stats.totalProducts }}</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon">
+        <i class="fas fa-layer-group"></i>
+      </div>
+      <div class="stat-details">
+        <span class="stat-title">Categories</span>
+        <span class="stat-value">{{ stats.totalCategories }}</span>
+      </div>
+    </div>
+
+    <div class="stat-card highlight-secondary">
+      <div class="stat-icon">
+        <i class="fas fa-cubes"></i>
+      </div>
+      <div class="stat-details">
+        <span class="stat-title">Total Inventory Qty</span>
+        <span class="stat-value">{{ stats.totalInventoryQuantity }}</span>
+      </div>
+    </div>
+
+    <!-- Partners -->
+    <div class="stat-card">
+      <div class="stat-icon">
+        <i class="fas fa-truck"></i>
+      </div>
+      <div class="stat-details">
+        <span class="stat-title">Suppliers</span>
+        <span class="stat-value">{{ stats.totalSuppliers }}</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon">
+        <i class="fas fa-users"></i>
+      </div>
+      <div class="stat-details">
+        <span class="stat-title">Customers</span>
+        <span class="stat-value">{{ stats.totalCustomers }}</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon">
+        <i class="fas fa-warehouse"></i>
+      </div>
+      <div class="stat-details">
+        <span class="stat-title">Warehouses</span>
+        <span class="stat-value">{{ stats.totalWarehouses }}</span>
+      </div>
+    </div>
+  </div>
+</div>

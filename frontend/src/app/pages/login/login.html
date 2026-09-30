@@ -25,13 +25,14 @@
           <input type="password" class="input-field" formControlName="password" placeholder="Enter your password">
         </div>
         
-        <div class="forgot-password">
-          <a href="#">Forgot Password?</a>
+        <div class="forgot-password" style="display: flex; justify-content: flex-end;">
+          <a routerLink="/register" style="color: var(--primary-color); text-decoration: none; font-weight: 500;">Create an account</a>
         </div>
         
         <button type="submit" class="btn-primary login-btn" [disabled]="loading || loginForm.invalid">
           {{ loading ? 'Logging in...' : 'Login' }}
         </button>
+
       </form>
     </div>
   </div>

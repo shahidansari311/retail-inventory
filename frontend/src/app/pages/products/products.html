@@ -1,0 +1,39 @@
+<div class="page-header">
+  <h2>All Items</h2>
+  <button class="btn-primary">+ Add New Item</button>
+</div>
+
+<div class="card">
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>SKU</th>
+          <th>Category</th>
+          <th>Price</th>
+          <th>Supplier</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngIf="loading">
+          <td colspan="6" class="loading-state">Loading items...</td>
+        </tr>
+        <tr *ngIf="!loading && products.length === 0">
+          <td colspan="6" class="empty-state">No items found. Create one!</td>
+        </tr>
+        <tr *ngFor="let item of products">
+          <td>{{ item.name }}</td>
+          <td>{{ item.sku }}</td>
+          <td>{{ item.category?.name || 'N/A' }}</td>
+          <td>${{ item.price }}</td>
+          <td>{{ item.supplier?.name || 'N/A' }}</td>
+          <td>
+            <button class="btn-text">Edit</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

@@ -1,7 +1,9 @@
-import { Component, OnInit , ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { InventoryService } from '../../services/inventory';
+import { ProductService } from '../../services/product';
+import { WarehouseService } from '../../services/warehouse';
 import { ToastService } from '../../services/toast';
 
 @Component({
@@ -13,6 +15,8 @@ import { ToastService } from '../../services/toast';
 })
 export class Inventory implements OnInit {
   inventoryItems: any[] = [];
+  products: any[] = [];
+  warehouses: any[] = [];
   loading = false;
   saving = false;
   error = '';
@@ -27,24 +31,50 @@ export class Inventory implements OnInit {
 
   constructor(
     private inventoryService: InventoryService,
-    private toast: ToastService
-  , private cdr: ChangeDetectorRef) {}
+    private productService: ProductService,
+    private warehouseService: WarehouseService,
+    private toast: ToastService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
-  ngOnInit() { this.loadInventory(); }
+  ngOnInit() { 
+    this.loadInventory(); 
+    this.loadProducts();
+    this.loadWarehouses();
+  }
 
   loadInventory() {
     this.loading = true;
     this.error = '';
     this.inventoryService.getAll().subscribe({
-      next: (data) => { this.inventoryItems = data; this.loading = false; },
+      next: (data) => { 
+        this.inventoryItems = data; 
+        this.loading = false; 
+        this.cdr.detectChanges();
+      },
       error: (err) => {
         this.error = err.status === 401 ? 'Session expired. Please log in again.'
                    : err.status === 403 ? 'You do not have permission to view inventory.'
                    : err.status === 0   ? 'Cannot reach server. Check your connection.'
                    : 'Failed to load inventory.';
         this.loading = false;
+        this.cdr.detectChanges();
         this.toast.error(this.error);
       }
+    });
+  }
+
+  loadProducts() {
+    this.productService.getAll().subscribe({
+      next: (data) => { this.products = data; this.cdr.detectChanges(); },
+      error: (err) => { console.error('Failed to load products', err); }
+    });
+  }
+
+  loadWarehouses() {
+    this.warehouseService.getAll().subscribe({
+      next: (data) => { this.warehouses = data; this.cdr.detectChanges(); },
+      error: (err) => { console.error('Failed to load warehouses', err); }
     });
   }
 
@@ -53,6 +83,7 @@ export class Inventory implements OnInit {
     this.formData = { productId: null, warehouseId: null, quantity: 0 };
     this.formError = '';
     this.showForm = true;
+    this.cdr.detectChanges();
   }
 
   editInventory(item: any) {
@@ -60,12 +91,14 @@ export class Inventory implements OnInit {
     this.formData = { ...item };
     this.formError = '';
     this.showForm = true;
+    this.cdr.detectChanges();
   }
 
   closeForm() {
     this.showForm = false;
     this.editingInventory = null;
     this.formError = '';
+    this.cdr.detectChanges();
   }
 
   validateForm(): string {
@@ -77,13 +110,24 @@ export class Inventory implements OnInit {
 
   saveInventory() {
     const err = this.validateForm();
-    if (err) { this.formError = err; return; }
+    if (err) { this.formError = err; this.cdr.detectChanges(); return; }
 
     this.saving = true;
     this.formError = '';
+    
+    const payload = { ...this.formData };
+    if (payload.productId) {
+      payload.product = { id: Number(payload.productId) };
+      delete payload.productId;
+    }
+    if (payload.warehouseId) {
+      payload.warehouse = { id: Number(payload.warehouseId) };
+      delete payload.warehouseId;
+    }
+
     const action = this.editingInventory
-      ? this.inventoryService.update(this.editingInventory.id, this.formData)
-      : this.inventoryService.create(this.formData);
+      ? this.inventoryService.update(this.editingInventory.id, payload)
+      : this.inventoryService.create(payload);
 
     action.subscribe({
       next: () => {
@@ -91,6 +135,7 @@ export class Inventory implements OnInit {
         this.loadInventory();
         this.closeForm();
         this.saving = false;
+        this.cdr.detectChanges();
       },
       error: (err) => {
         this.formError = err.status === 403 ? 'You do not have permission to do this.'
@@ -98,6 +143,7 @@ export class Inventory implements OnInit {
                        : err.error?.message || 'Failed to save inventory.';
         this.toast.error(this.formError);
         this.saving = false;
+        this.cdr.detectChanges();
       }
     });
   }
@@ -105,11 +151,13 @@ export class Inventory implements OnInit {
   confirmDelete(item: any) {
     this.deleteTarget = item;
     this.deleteConfirming = true;
+    this.cdr.detectChanges();
   }
 
   cancelDelete() {
     this.deleteTarget = null;
     this.deleteConfirming = false;
+    this.cdr.detectChanges();
   }
 
   executeDelete() {
@@ -128,6 +176,7 @@ export class Inventory implements OnInit {
                   : 'Failed to delete inventory record.';
         this.toast.error(msg);
         this.deleteTarget = null;
+        this.cdr.detectChanges();
       }
     });
   }

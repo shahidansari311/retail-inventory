@@ -36,7 +36,7 @@ export class Warehouses implements OnInit {
     this.loading = true;
     this.error = '';
     this.warehouseService.getAll().subscribe({
-      next: (data) => { this.warehouses = data; this.loading = false; },
+      next: (data) => { this.warehouses = data; this.loading = false; this.cdr.detectChanges(); },
       error: (err) => {
         this.error = err.status === 401 ? 'Session expired. Please log in again.'
                    : err.status === 403 ? 'You do not have permission to view warehouses.'
@@ -44,6 +44,7 @@ export class Warehouses implements OnInit {
                    : 'Failed to load warehouses.';
         this.loading = false;
         this.toast.error(this.error);
+        this.cdr.detectChanges();
       }
     });
   }
@@ -53,6 +54,7 @@ export class Warehouses implements OnInit {
     this.formData = { name: '', location: '' };
     this.formError = '';
     this.showForm = true;
+    this.cdr.detectChanges();
   }
 
   editWarehouse(warehouse: any) {
@@ -60,12 +62,14 @@ export class Warehouses implements OnInit {
     this.formData = { ...warehouse };
     this.formError = '';
     this.showForm = true;
+    this.cdr.detectChanges();
   }
 
   closeForm() {
     this.showForm = false;
     this.editingWarehouse = null;
     this.formError = '';
+    this.cdr.detectChanges();
   }
 
   validateForm(): string {
@@ -76,7 +80,7 @@ export class Warehouses implements OnInit {
 
   saveWarehouse() {
     const err = this.validateForm();
-    if (err) { this.formError = err; return; }
+    if (err) { this.formError = err; this.cdr.detectChanges(); return; }
 
     this.saving = true;
     this.formError = '';
@@ -90,6 +94,7 @@ export class Warehouses implements OnInit {
         this.loadWarehouses();
         this.closeForm();
         this.saving = false;
+        this.cdr.detectChanges();
       },
       error: (err) => {
         this.formError = err.status === 409 ? 'A warehouse with this name already exists.'
@@ -98,6 +103,7 @@ export class Warehouses implements OnInit {
                        : err.error?.message || 'Failed to save warehouse.';
         this.toast.error(this.formError);
         this.saving = false;
+        this.cdr.detectChanges();
       }
     });
   }
@@ -105,11 +111,13 @@ export class Warehouses implements OnInit {
   confirmDelete(warehouse: any) {
     this.deleteTarget = warehouse;
     this.deleteConfirming = true;
+    this.cdr.detectChanges();
   }
 
   cancelDelete() {
     this.deleteTarget = null;
     this.deleteConfirming = false;
+    this.cdr.detectChanges();
   }
 
   executeDelete() {
@@ -130,6 +138,7 @@ export class Warehouses implements OnInit {
                   : 'Failed to delete warehouse.';
         this.toast.error(msg);
         this.deleteTarget = null;
+        this.cdr.detectChanges();
       }
     });
   }

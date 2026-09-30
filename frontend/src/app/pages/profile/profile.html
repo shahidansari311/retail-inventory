@@ -1,0 +1,32 @@
+<div class="products-page">
+  <div class="page-header">
+    <div>
+      <h1>My Profile</h1>
+      <p>Manage your account settings and preferences</p>
+    </div>
+  </div>
+
+  <div class="profile-container" *ngIf="user">
+    <div class="profile-card">
+      <div class="avatar-section">
+        <div class="avatar-large">{{ user.name?.charAt(0) | uppercase }}</div>
+        <h2>{{ user.name }}</h2>
+        <span class="role-badge">{{ user.role }}</span>
+      </div>
+      
+      <div class="info-section">
+        <h3>Contact Information</h3>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="label">Email</span>
+            <span class="value">{{ user.email }}</span>
+          </div>
+          <div class="info-item" *ngIf="user.phone">
+            <span class="label">Phone</span>
+            <span class="value">{{ user.phone }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

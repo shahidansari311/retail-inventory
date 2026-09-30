@@ -47,7 +47,12 @@ public class ProductController {
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id) {
-        service.delete(id);
+    public org.springframework.http.ResponseEntity<Void> delete(@PathVariable Long id) {
+        try {
+            service.delete(id);
+            return org.springframework.http.ResponseEntity.noContent().build();
+        } catch (org.springframework.dao.DataIntegrityViolationException e) {
+            return org.springframework.http.ResponseEntity.status(org.springframework.http.HttpStatus.CONFLICT).build();
+        }
     }
 }

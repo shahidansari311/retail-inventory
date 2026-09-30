@@ -33,11 +33,12 @@ export class Suppliers implements OnInit {
     this.loading = true;
     this.error = '';
     this.supplierService.getAll().subscribe({
-      next: (data) => { this.suppliers = data; this.loading = false; },
+      next: (data) => { this.suppliers = data; this.loading = false; this.cdr.detectChanges(); },
       error: (err) => {
         this.error = 'Failed to load suppliers.';
         this.loading = false;
         this.toast.error(this.error);
+        this.cdr.detectChanges();
       }
     });
   }
@@ -47,6 +48,7 @@ export class Suppliers implements OnInit {
     this.formData = { name: '', contactEmail: '', contactPhone: '', address: '' };
     this.formError = '';
     this.showForm = true;
+    this.cdr.detectChanges();
   }
 
   editSupplier(supplier: any) {
@@ -54,12 +56,14 @@ export class Suppliers implements OnInit {
     this.formData = { ...supplier };
     this.formError = '';
     this.showForm = true;
+    this.cdr.detectChanges();
   }
 
   closeForm() {
     this.showForm = false;
     this.editingSupplier = null;
     this.formError = '';
+    this.cdr.detectChanges();
   }
 
   saveSupplier() {
@@ -75,11 +79,13 @@ export class Suppliers implements OnInit {
         this.loadSuppliers();
         this.closeForm();
         this.saving = false;
+        this.cdr.detectChanges();
       },
       error: (err) => {
         this.formError = err.error?.message || 'Failed to save supplier.';
         this.toast.error(this.formError);
         this.saving = false;
+        this.cdr.detectChanges();
       }
     });
   }
@@ -87,11 +93,13 @@ export class Suppliers implements OnInit {
   confirmDelete(supplier: any) {
     this.deleteTarget = supplier;
     this.deleteConfirming = true;
+    this.cdr.detectChanges();
   }
 
   cancelDelete() {
     this.deleteTarget = null;
     this.deleteConfirming = false;
+    this.cdr.detectChanges();
   }
 
   executeDelete() {

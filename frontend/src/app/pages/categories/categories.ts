@@ -36,7 +36,7 @@ export class Categories implements OnInit {
     this.loading = true;
     this.error = '';
     this.categoryService.getAll().subscribe({
-      next: (data) => { this.categories = data; this.loading = false; },
+      next: (data) => { this.categories = data; this.loading = false; this.cdr.detectChanges(); },
       error: (err) => {
         this.error = err.status === 401 ? 'Session expired. Please log in again.'
                    : err.status === 403 ? 'You do not have permission to view categories.'
@@ -44,6 +44,7 @@ export class Categories implements OnInit {
                    : 'Failed to load categories.';
         this.loading = false;
         this.toast.error(this.error);
+        this.cdr.detectChanges();
       }
     });
   }
@@ -53,6 +54,7 @@ export class Categories implements OnInit {
     this.formData = { name: '', description: '' };
     this.formError = '';
     this.showForm = true;
+    this.cdr.detectChanges();
   }
 
   editCategory(category: any) {
@@ -60,12 +62,14 @@ export class Categories implements OnInit {
     this.formData = { ...category };
     this.formError = '';
     this.showForm = true;
+    this.cdr.detectChanges();
   }
 
   closeForm() {
     this.showForm = false;
     this.editingCategory = null;
     this.formError = '';
+    this.cdr.detectChanges();
   }
 
   validateForm(): string {
@@ -75,7 +79,7 @@ export class Categories implements OnInit {
 
   saveCategory() {
     const err = this.validateForm();
-    if (err) { this.formError = err; return; }
+    if (err) { this.formError = err; this.cdr.detectChanges(); return; }
 
     this.saving = true;
     this.formError = '';
@@ -89,6 +93,7 @@ export class Categories implements OnInit {
         this.loadCategories();
         this.closeForm();
         this.saving = false;
+        this.cdr.detectChanges();
       },
       error: (err) => {
         this.formError = err.status === 409 ? 'A category with this name already exists.'
@@ -97,6 +102,7 @@ export class Categories implements OnInit {
                        : err.error?.message || 'Failed to save category.';
         this.toast.error(this.formError);
         this.saving = false;
+        this.cdr.detectChanges();
       }
     });
   }
@@ -104,11 +110,13 @@ export class Categories implements OnInit {
   confirmDelete(category: any) {
     this.deleteTarget = category;
     this.deleteConfirming = true;
+    this.cdr.detectChanges();
   }
 
   cancelDelete() {
     this.deleteTarget = null;
     this.deleteConfirming = false;
+    this.cdr.detectChanges();
   }
 
   executeDelete() {
@@ -129,6 +137,7 @@ export class Categories implements OnInit {
                   : 'Failed to delete category.';
         this.toast.error(msg);
         this.deleteTarget = null;
+        this.cdr.detectChanges();
       }
     });
   }

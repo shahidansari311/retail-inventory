@@ -60,6 +60,7 @@ export class Products implements OnInit {
     this.formData = { name: '', description: '', sku: '', price: 0, quantity: 0 };
     this.formError = '';
     this.showForm = true;
+    this.cdr.detectChanges();
   }
 
   editProduct(product: any) {
@@ -67,12 +68,14 @@ export class Products implements OnInit {
     this.formData = { ...product };
     this.formError = '';
     this.showForm = true;
+    this.cdr.detectChanges();
   }
 
   closeForm() {
     this.showForm = false;
     this.editingProduct = null;
     this.formError = '';
+    this.cdr.detectChanges();
   }
 
   validateForm(): string {
@@ -114,11 +117,13 @@ export class Products implements OnInit {
   confirmDelete(product: any) {
     this.deleteTarget = product;
     this.deleteConfirming = true;
+    this.cdr.detectChanges();
   }
 
   cancelDelete() {
     this.deleteTarget = null;
     this.deleteConfirming = false;
+    this.cdr.detectChanges();
   }
 
   executeDelete() {
@@ -135,6 +140,7 @@ export class Products implements OnInit {
       error: (err) => {
         const msg = err.status === 403 ? 'You do not have permission to delete this product.'
                   : err.status === 404 ? 'Product not found — it may have already been deleted.'
+                  : err.status === 409 ? 'Cannot delete this product because it is currently used in inventory or orders.'
                   : 'Failed to delete product.';
         this.toast.error(msg);
         this.deleteTarget = null;

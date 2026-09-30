@@ -33,11 +33,12 @@ export class Customers implements OnInit {
     this.loading = true;
     this.error = '';
     this.customerService.getAll().subscribe({
-      next: (data) => { this.customers = data; this.loading = false; },
+      next: (data) => { this.customers = data; this.loading = false; this.cdr.detectChanges(); },
       error: (err) => {
         this.error = 'Failed to load customers.';
         this.loading = false;
         this.toast.error(this.error);
+        this.cdr.detectChanges();
       }
     });
   }
@@ -47,6 +48,7 @@ export class Customers implements OnInit {
     this.formData = { name: '', email: '', phone: '', address: '' };
     this.formError = '';
     this.showForm = true;
+    this.cdr.detectChanges();
   }
 
   editCustomer(customer: any) {
@@ -54,12 +56,14 @@ export class Customers implements OnInit {
     this.formData = { ...customer };
     this.formError = '';
     this.showForm = true;
+    this.cdr.detectChanges();
   }
 
   closeForm() {
     this.showForm = false;
     this.editingCustomer = null;
     this.formError = '';
+    this.cdr.detectChanges();
   }
 
   saveCustomer() {
@@ -75,11 +79,13 @@ export class Customers implements OnInit {
         this.loadCustomers();
         this.closeForm();
         this.saving = false;
+        this.cdr.detectChanges();
       },
       error: (err) => {
         this.formError = err.error?.message || 'Failed to save customer.';
         this.toast.error(this.formError);
         this.saving = false;
+        this.cdr.detectChanges();
       }
     });
   }
@@ -87,11 +93,13 @@ export class Customers implements OnInit {
   confirmDelete(customer: any) {
     this.deleteTarget = customer;
     this.deleteConfirming = true;
+    this.cdr.detectChanges();
   }
 
   cancelDelete() {
     this.deleteTarget = null;
     this.deleteConfirming = false;
+    this.cdr.detectChanges();
   }
 
   executeDelete() {

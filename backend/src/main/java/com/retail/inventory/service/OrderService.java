@@ -43,45 +43,48 @@ public class OrderService {
         order.setOrderDate(LocalDateTime.now());
         order.setStatus("PENDING");
         
-        BigDecimal totalAmount = BigDecimal.ZERO;
+        BigDecimal totalAmount = requestOrder.getTotalAmount() != null ? requestOrder.getTotalAmount() : BigDecimal.ZERO;
 
-        for (OrderItem item : requestOrder.getItems()) {
-            Product product = productRepository.findById(item.getProduct().getId())
-                    .orElseThrow(() -> new RuntimeException("Product not found"));
-            
-            // Check inventory (assuming single warehouse for simplicity, or getting first available)
-            List<Inventory> inventories = inventoryRepository.findAll(); // Simplified for learning
-            Inventory inventory = null;
-            for (Inventory inv : inventories) {
-                if (inv.getProduct().getId().equals(product.getId()) && inv.getQuantity() >= item.getQuantity()) {
-                    inventory = inv;
-                    break;
+        if (requestOrder.getItems() != null && !requestOrder.getItems().isEmpty()) {
+            totalAmount = BigDecimal.ZERO; // Recalculate if there are items
+            for (OrderItem item : requestOrder.getItems()) {
+                Product product = productRepository.findById(item.getProduct().getId())
+                        .orElseThrow(() -> new RuntimeException("Product not found"));
+                
+                // Check inventory (assuming single warehouse for simplicity, or getting first available)
+                List<Inventory> inventories = inventoryRepository.findAll(); // Simplified for learning
+                Inventory inventory = null;
+                for (Inventory inv : inventories) {
+                    if (inv.getProduct().getId().equals(product.getId()) && inv.getQuantity() >= item.getQuantity()) {
+                        inventory = inv;
+                        break;
+                    }
                 }
+
+                if (inventory == null) {
+                    throw new RuntimeException("Insufficient inventory for product: " + product.getName());
+                }
+
+                // Decrease inventory
+                inventory.setQuantity(inventory.getQuantity() - item.getQuantity());
+                inventoryRepository.save(inventory);
+
+                // Create stock movement
+                StockMovement movement = new StockMovement();
+                movement.setProduct(product);
+                movement.setWarehouse(inventory.getWarehouse());
+                movement.setType("SALE");
+                movement.setQuantity(item.getQuantity());
+                movement.setMovementDate(LocalDateTime.now());
+                stockMovementRepository.save(movement);
+
+                item.setOrder(order);
+                item.setProduct(product);
+                item.setUnitPrice(product.getPrice());
+                
+                BigDecimal itemTotal = product.getPrice().multiply(BigDecimal.valueOf(item.getQuantity()));
+                totalAmount = totalAmount.add(itemTotal);
             }
-
-            if (inventory == null) {
-                throw new RuntimeException("Insufficient inventory for product: " + product.getName());
-            }
-
-            // Decrease inventory
-            inventory.setQuantity(inventory.getQuantity() - item.getQuantity());
-            inventoryRepository.save(inventory);
-
-            // Create stock movement
-            StockMovement movement = new StockMovement();
-            movement.setProduct(product);
-            movement.setWarehouse(inventory.getWarehouse());
-            movement.setType("SALE");
-            movement.setQuantity(item.getQuantity());
-            movement.setMovementDate(LocalDateTime.now());
-            stockMovementRepository.save(movement);
-
-            item.setOrder(order);
-            item.setProduct(product);
-            item.setUnitPrice(product.getPrice());
-            
-            BigDecimal itemTotal = product.getPrice().multiply(BigDecimal.valueOf(item.getQuantity()));
-            totalAmount = totalAmount.add(itemTotal);
         }
 
         order.setItems(requestOrder.getItems());

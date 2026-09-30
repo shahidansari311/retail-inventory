@@ -14,6 +14,7 @@ import { Orders } from './pages/orders/orders';
 import { Customers } from './pages/customers/customers';
 import { Suppliers } from './pages/suppliers/suppliers';
 import { PurchaseOrders } from './pages/purchase-orders/purchase-orders';
+import { Profile } from './pages/profile/profile';
 
 import { authGuard, publicGuard } from './auth.guard';
 
@@ -35,6 +36,7 @@ export const routes: Routes = [
       { path: 'customers',       component: Customers },
       { path: 'suppliers',       component: Suppliers },
       { path: 'purchase-orders', component: PurchaseOrders },
+      { path: 'profile',         component: Profile },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   },

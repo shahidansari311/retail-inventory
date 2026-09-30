@@ -102,13 +102,19 @@
 
       <form (ngSubmit)="saveInventory()">
         <div class="form-group">
-          <label>Product ID <span class="req">*</span></label>
-          <input type="number" [(ngModel)]="formData.productId" name="productId" class="form-control" required>
+          <label>Product <span class="req">*</span></label>
+          <select [(ngModel)]="formData.productId" name="productId" class="form-control" required>
+            <option [ngValue]="null" disabled>Select Product</option>
+            <option *ngFor="let p of products" [ngValue]="p.id">{{ p.name }} (SKU: {{ p.sku }})</option>
+          </select>
         </div>
 
         <div class="form-group">
-          <label>Warehouse ID <span class="req">*</span></label>
-          <input type="number" [(ngModel)]="formData.warehouseId" name="warehouseId" class="form-control" required>
+          <label>Warehouse <span class="req">*</span></label>
+          <select [(ngModel)]="formData.warehouseId" name="warehouseId" class="form-control" required>
+            <option [ngValue]="null" disabled>Select Warehouse</option>
+            <option *ngFor="let w of warehouses" [ngValue]="w.id">{{ w.name }} (ID: {{ w.id }})</option>
+          </select>
         </div>
         
         <div class="form-group">

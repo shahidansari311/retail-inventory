@@ -1,0 +1,129 @@
+<div class="products-page">
+
+  <!-- Page header -->
+  <div class="page-header">
+    <div>
+      <h1>Inventory</h1>
+      <p>Manage product stock levels across warehouses</p>
+    </div>
+    <button class="btn-primary" (click)="openAddForm()">
+      <i class="fas fa-plus"></i> Add Inventory Record
+    </button>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="state-box">
+    <div class="page-spinner"></div>
+    <p>Loading inventory...</p>
+  </div>
+
+  <!-- Empty state -->
+  <div *ngIf="!loading && !error && inventoryItems.length === 0" class="state-box empty">
+    <div class="state-icon"><i class="fas fa-boxes-stacked"></i></div>
+    <h3>No inventory records yet</h3>
+    <p>Start tracking your stock by adding your first inventory record.</p>
+    <button class="btn-primary" (click)="openAddForm()">
+      <i class="fas fa-plus"></i> Add First Record
+    </button>
+  </div>
+
+  <!-- Error state -->
+  <div *ngIf="error && !loading" class="state-box error-state">
+    <div class="state-icon error"><i class="fas fa-circle-xmark"></i></div>
+    <h3>Something went wrong</h3>
+    <p>{{ error }}</p>
+    <button class="btn-primary" (click)="loadInventory()">
+      <i class="fas fa-rotate-right"></i> Try Again
+    </button>
+  </div>
+
+  <!-- Table -->
+  <div class="table-container" *ngIf="!loading && inventoryItems.length > 0">
+    <table class="products-table data-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Product ID</th>
+          <th>Warehouse ID</th>
+          <th>Quantity</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of inventoryItems">
+          <td>{{ item.id }}</td>
+          <td><span class="sku-badge">{{ item.productId }}</span></td>
+          <td><span class="sku-badge">{{ item.warehouseId }}</span></td>
+          <td>
+            <span class="qty-badge" [class.low]="item.quantity <= 10">
+              {{ item.quantity }}
+            </span>
+          </td>
+          <td class="actions-cell">
+            <button class="btn-icon edit" (click)="editInventory(item)" title="Edit inventory record">
+              <i class="fas fa-pen-to-square"></i>
+            </button>
+            <button class="btn-icon delete" (click)="confirmDelete(item)" title="Delete inventory record">
+              <i class="fas fa-trash"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Delete confirmation modal -->
+  <div class="modal-overlay" *ngIf="deleteConfirming" (click)="cancelDelete()"></div>
+  <div class="confirm-modal" *ngIf="deleteConfirming">
+    <div class="confirm-icon"><i class="fas fa-trash"></i></div>
+    <h3>Delete Inventory Record?</h3>
+    <p>Are you sure you want to delete this record? This action cannot be undone.</p>
+    <div class="confirm-actions">
+      <button class="btn-secondary" (click)="cancelDelete()">Cancel</button>
+      <button class="btn-delete" (click)="executeDelete()">
+        <i class="fas fa-trash"></i> Delete
+      </button>
+    </div>
+  </div>
+
+  <!-- Side Panel overlay -->
+  <div class="panel-overlay" *ngIf="showForm" (click)="closeForm()"></div>
+  <div class="side-panel" [class.open]="showForm">
+    <div class="panel-header">
+      <h2>{{ editingInventory ? 'Edit Inventory Record' : 'Add Inventory Record' }}</h2>
+      <button class="close-btn" (click)="closeForm()"><i class="fas fa-times"></i></button>
+    </div>
+
+    <div class="panel-content">
+      <!-- Form error -->
+      <div *ngIf="formError" class="form-error-banner">
+        <i class="fas fa-circle-exclamation"></i> {{ formError }}
+      </div>
+
+      <form (ngSubmit)="saveInventory()">
+        <div class="form-group">
+          <label>Product ID <span class="req">*</span></label>
+          <input type="number" [(ngModel)]="formData.productId" name="productId" class="form-control" required>
+        </div>
+
+        <div class="form-group">
+          <label>Warehouse ID <span class="req">*</span></label>
+          <input type="number" [(ngModel)]="formData.warehouseId" name="warehouseId" class="form-control" required>
+        </div>
+        
+        <div class="form-group">
+          <label>Quantity <span class="req">*</span></label>
+          <input type="number" [(ngModel)]="formData.quantity" name="quantity" min="0" class="form-control" required>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" (click)="closeForm()">Cancel</button>
+          <button type="submit" class="btn-primary" [disabled]="saving">
+            <span *ngIf="!saving"><i class="fas fa-floppy-disk"></i> {{ editingInventory ? 'Update' : 'Save' }}</span>
+            <span *ngIf="saving" class="spinner"></span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

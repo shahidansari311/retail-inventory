@@ -1,0 +1,45 @@
+<div class="not-found-page">
+  <div class="glow-bg"></div>
+
+  <div class="not-found-content">
+    <!-- Animated 404 -->
+    <div class="error-code">
+      <span class="digit">4</span>
+      <div class="zero-wrapper">
+        <div class="zero-ring"></div>
+        <span class="digit zero">0</span>
+      </div>
+      <span class="digit">4</span>
+    </div>
+
+    <!-- Icon -->
+    <div class="not-found-icon">
+      <i class="fas fa-compass-drafting"></i>
+    </div>
+
+    <h1>Page Not Found</h1>
+    <p>Oops! The page you're looking for doesn't exist or has been moved. Let's get you back on track.</p>
+
+    <div class="not-found-actions">
+      <a routerLink="/dashboard" class="btn-home">
+        <i class="fas fa-house"></i>
+        Back to Dashboard
+      </a>
+      <button class="btn-back" (click)="goBack()">
+        <i class="fas fa-arrow-left"></i>
+        Go Back
+      </button>
+    </div>
+
+    <!-- Helpful links -->
+    <div class="helpful-links">
+      <p class="links-title">Or try one of these:</p>
+      <div class="links-grid">
+        <a routerLink="/products"><i class="fas fa-box"></i> Products</a>
+        <a routerLink="/orders"><i class="fas fa-shopping-cart"></i> Orders</a>
+        <a routerLink="/inventory"><i class="fas fa-cubes"></i> Inventory</a>
+        <a routerLink="/suppliers"><i class="fas fa-truck"></i> Suppliers</a>
+      </div>
+    </div>
+  </div>
+</div>

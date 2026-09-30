@@ -1,0 +1,120 @@
+<div class="products-page">
+  <div class="page-header">
+    <div>
+      <h1>Stock Movements</h1>
+      <p>Audit log of all inventory changes and transfers</p>
+    </div>
+    <button class="btn-primary" (click)="openAddForm()">
+      <i class="fas fa-plus"></i> Record Movement
+    </button>
+  </div>
+
+  <div *ngIf="loading" class="state-box">
+    <div class="page-spinner"></div>
+    <p>Loading stock movements...</p>
+  </div>
+
+  <div *ngIf="!loading && !error && movements.length === 0" class="state-box empty">
+    <div class="state-icon"><i class="fas fa-arrow-right-arrow-left"></i></div>
+    <h3>No stock movements yet</h3>
+    <p>Record your first stock movement to track inventory changes.</p>
+    <button class="btn-primary" (click)="openAddForm()">
+      <i class="fas fa-plus"></i> Record Movement
+    </button>
+  </div>
+
+  <div *ngIf="error && !loading" class="state-box error-state">
+    <div class="state-icon error"><i class="fas fa-circle-xmark"></i></div>
+    <h3>Something went wrong</h3>
+    <p>{{ error }}</p>
+    <button class="btn-primary" (click)="loadMovements()">
+      <i class="fas fa-rotate-right"></i> Try Again
+    </button>
+  </div>
+
+  <div class="table-container" *ngIf="!loading && movements.length > 0">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Type</th>
+          <th>Product ID</th>
+          <th>Warehouse ID</th>
+          <th>Quantity</th>
+          <th>Reason</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let m of movements">
+          <td><span class="sku-badge">MOV-{{ m.id }}</span></td>
+          <td>
+            <span class="qty-badge" [class.low]="m.movementType === 'OUT'" [style.background]="m.movementType === 'IN' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)'" [style.color]="m.movementType === 'IN' ? '#34d399' : '#f87171'">
+              {{ m.movementType }}
+            </span>
+          </td>
+          <td><strong>#{{ m.productId }}</strong></td>
+          <td>Warehouse #{{ m.warehouseId }}</td>
+          <td>
+            <span [style.color]="m.movementType === 'IN' ? '#34d399' : '#f87171'">
+              {{ m.movementType === 'IN' ? '+' : '-' }}{{ m.quantity }}
+            </span>
+          </td>
+          <td>{{ m.reason }}</td>
+          <td>{{ m.movementDate | date:'short' }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="panel-overlay" *ngIf="showForm" (click)="closeForm()"></div>
+  <div class="side-panel" [class.open]="showForm">
+    <div class="panel-header">
+      <h2>Record Stock Movement</h2>
+      <button class="close-btn" (click)="closeForm()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="panel-content">
+      <div *ngIf="formError" class="form-error-banner">
+        <i class="fas fa-circle-exclamation"></i> {{ formError }}
+      </div>
+      <form (ngSubmit)="saveMovement()">
+        <div class="form-row">
+          <div class="form-group half">
+            <label>Product ID <span class="req">*</span></label>
+            <input type="number" [(ngModel)]="formData.productId" name="productId" class="form-control" required>
+          </div>
+          <div class="form-group half">
+            <label>Warehouse ID <span class="req">*</span></label>
+            <input type="number" [(ngModel)]="formData.warehouseId" name="warehouseId" class="form-control" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group half">
+            <label>Type <span class="req">*</span></label>
+            <select [(ngModel)]="formData.movementType" name="movementType" class="form-control" required>
+              <option value="IN">IN (Receive)</option>
+              <option value="OUT">OUT (Dispatch)</option>
+              <option value="TRANSFER">TRANSFER</option>
+              <option value="ADJUSTMENT">ADJUSTMENT</option>
+            </select>
+          </div>
+          <div class="form-group half">
+            <label>Quantity <span class="req">*</span></label>
+            <input type="number" [(ngModel)]="formData.quantity" name="quantity" class="form-control" min="1" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Reason / Notes</label>
+          <textarea [(ngModel)]="formData.reason" name="reason" rows="3" class="form-control" placeholder="e.g. Restock from PO-102"></textarea>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" (click)="closeForm()">Cancel</button>
+          <button type="submit" class="btn-primary" [disabled]="saving">
+            <span *ngIf="!saving"><i class="fas fa-floppy-disk"></i> Record</span>
+            <span *ngIf="saving" class="spinner"></span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

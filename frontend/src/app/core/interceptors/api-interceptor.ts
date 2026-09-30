@@ -1,12 +1,13 @@
 import { HttpInterceptorFn, HttpRequest, HttpHandlerFn, HttpErrorResponse } from '@angular/common/http';
-import { inject } from '@angular/core';
-import { catchError, switchMap, throwError } from 'rxjs';
+import { inject, ApplicationRef } from '@angular/core';
+import { catchError, switchMap, throwError, finalize } from 'rxjs';
 import { Auth } from '../../services/auth';
 import { Router } from '@angular/router';
 
 export const apiInterceptor: HttpInterceptorFn = (req: HttpRequest<any>, next: HttpHandlerFn) => {
   const authService = inject(Auth);
   const router = inject(Router);
+  const appRef = inject(ApplicationRef);
 
   const token = authService.getAccessToken();
   const authReq = token ? req.clone({
@@ -31,6 +32,11 @@ export const apiInterceptor: HttpInterceptorFn = (req: HttpRequest<any>, next: H
         );
       }
       return throwError(() => error);
+    }),
+    finalize(() => {
+      // Force global change detection when the HTTP request finishes.
+      // This ensures all pages update instantly regardless of Zone.js issues.
+      setTimeout(() => appRef.tick(), 10);
     })
   );
 };

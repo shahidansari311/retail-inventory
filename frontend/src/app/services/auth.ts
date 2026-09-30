@@ -64,4 +64,14 @@ export class Auth {
   getAccessToken(): string | null {
     return localStorage.getItem('accessToken');
   }
+
+  getUserRole(): string {
+    const user = this.currentUserSubject.value;
+    return user ? (user.role || 'USER') : 'USER';
+  }
+
+  hasAnyRole(allowedRoles: string[]): boolean {
+    const role = this.getUserRole();
+    return allowedRoles.includes(role);
+  }
 }

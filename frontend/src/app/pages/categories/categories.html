@@ -1,0 +1,118 @@
+<div class="products-page">
+
+  <!-- Page header -->
+  <div class="page-header">
+    <div>
+      <h1>Categories</h1>
+      <p>Manage your product categories</p>
+    </div>
+    <button class="btn-primary" (click)="openAddForm()">
+      <i class="fas fa-plus"></i> Add Category
+    </button>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="state-box">
+    <div class="page-spinner"></div>
+    <p>Loading categories...</p>
+  </div>
+
+  <!-- Empty state -->
+  <div *ngIf="!loading && !error && categories.length === 0" class="state-box empty">
+    <div class="state-icon"><i class="fas fa-tags"></i></div>
+    <h3>No categories yet</h3>
+    <p>Start organizing your products by adding your first category.</p>
+    <button class="btn-primary" (click)="openAddForm()">
+      <i class="fas fa-plus"></i> Add First Category
+    </button>
+  </div>
+
+  <!-- Error state -->
+  <div *ngIf="error && !loading" class="state-box error-state">
+    <div class="state-icon error"><i class="fas fa-circle-xmark"></i></div>
+    <h3>Something went wrong</h3>
+    <p>{{ error }}</p>
+    <button class="btn-primary" (click)="loadCategories()">
+      <i class="fas fa-rotate-right"></i> Try Again
+    </button>
+  </div>
+
+  <!-- Table -->
+  <div class="table-container" *ngIf="!loading && categories.length > 0">
+    <table class="products-table data-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Description</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let category of categories">
+          <td>{{ category.id }}</td>
+          <td><strong>{{ category.name }}</strong></td>
+          <td class="desc-cell">{{ category.description || '—' }}</td>
+          <td class="actions-cell">
+            <button class="btn-icon edit" (click)="editCategory(category)" title="Edit category">
+              <i class="fas fa-pen-to-square"></i>
+            </button>
+            <button class="btn-icon delete" (click)="confirmDelete(category)" title="Delete category">
+              <i class="fas fa-trash"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Delete confirmation modal -->
+  <div class="modal-overlay" *ngIf="deleteConfirming" (click)="cancelDelete()"></div>
+  <div class="confirm-modal" *ngIf="deleteConfirming">
+    <div class="confirm-icon"><i class="fas fa-trash"></i></div>
+    <h3>Delete Category?</h3>
+    <p>Are you sure you want to delete <strong>"{{ deleteTarget?.name }}"</strong>? This action cannot be undone.</p>
+    <div class="confirm-actions">
+      <button class="btn-secondary" (click)="cancelDelete()">Cancel</button>
+      <button class="btn-delete" (click)="executeDelete()">
+        <i class="fas fa-trash"></i> Delete
+      </button>
+    </div>
+  </div>
+
+  <!-- Side Panel overlay -->
+  <div class="panel-overlay" *ngIf="showForm" (click)="closeForm()"></div>
+  <div class="side-panel" [class.open]="showForm">
+    <div class="panel-header">
+      <h2>{{ editingCategory ? 'Edit Category' : 'Add New Category' }}</h2>
+      <button class="close-btn" (click)="closeForm()"><i class="fas fa-times"></i></button>
+    </div>
+
+    <div class="panel-content">
+      <!-- Form error -->
+      <div *ngIf="formError" class="form-error-banner">
+        <i class="fas fa-circle-exclamation"></i> {{ formError }}
+      </div>
+
+      <form (ngSubmit)="saveCategory()">
+        <div class="form-group">
+          <label>Category Name <span class="req">*</span></label>
+          <input type="text" [(ngModel)]="formData.name" name="name" class="form-control" placeholder="e.g. Electronics" required>
+        </div>
+
+        <div class="form-group">
+          <label>Description</label>
+          <textarea [(ngModel)]="formData.description" name="description" rows="3" class="form-control" placeholder="Short category description..."></textarea>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" (click)="closeForm()">Cancel</button>
+          <button type="submit" class="btn-primary" [disabled]="saving">
+            <span *ngIf="!saving"><i class="fas fa-floppy-disk"></i> {{ editingCategory ? 'Update' : 'Save' }}</span>
+            <span *ngIf="saving" class="spinner"></span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

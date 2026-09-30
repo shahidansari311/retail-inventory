@@ -1,0 +1,124 @@
+<div class="products-page">
+  <div class="page-header">
+    <div>
+      <h1>Orders</h1>
+      <p>Manage customer orders and fulfillment</p>
+    </div>
+    <button class="btn-primary" (click)="openAddForm()">
+      <i class="fas fa-plus"></i> Create Order
+    </button>
+  </div>
+
+  <div *ngIf="loading" class="state-box">
+    <div class="page-spinner"></div>
+    <p>Loading orders...</p>
+  </div>
+
+  <div *ngIf="!loading && !error && orders.length === 0" class="state-box empty">
+    <div class="state-icon"><i class="fas fa-file-invoice"></i></div>
+    <h3>No orders found</h3>
+    <p>Create a new order to get started.</p>
+    <button class="btn-primary" (click)="openAddForm()">
+      <i class="fas fa-plus"></i> Create First Order
+    </button>
+  </div>
+
+  <div *ngIf="error && !loading" class="state-box error-state">
+    <div class="state-icon error"><i class="fas fa-circle-xmark"></i></div>
+    <h3>Something went wrong</h3>
+    <p>{{ error }}</p>
+    <button class="btn-primary" (click)="loadOrders()">
+      <i class="fas fa-rotate-right"></i> Try Again
+    </button>
+  </div>
+
+  <div class="table-container" *ngIf="!loading && orders.length > 0">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Order ID</th>
+          <th>Customer</th>
+          <th>Date</th>
+          <th>Status</th>
+          <th>Total</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let order of orders">
+          <td><span class="sku-badge">ORD-{{ order.id }}</span></td>
+          <td><strong>Customer #{{ order.customerId }}</strong></td>
+          <td>{{ order.orderDate | date:'mediumDate' }}</td>
+          <td>
+            <span class="qty-badge" [class.low]="order.status === 'PENDING'">{{ order.status }}</span>
+          </td>
+          <td><span class="price">${{ order.totalAmount | number:'1.2-2' }}</span></td>
+          <td class="actions-cell">
+            <button class="btn-icon edit" (click)="editOrder(order)" title="Edit">
+              <i class="fas fa-pen-to-square"></i>
+            </button>
+            <button class="btn-icon delete" (click)="confirmDelete(order)" title="Delete">
+              <i class="fas fa-trash"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="modal-overlay" *ngIf="deleteConfirming" (click)="cancelDelete()"></div>
+  <div class="confirm-modal" *ngIf="deleteConfirming">
+    <div class="confirm-icon"><i class="fas fa-trash"></i></div>
+    <h3>Delete Order?</h3>
+    <p>Are you sure you want to delete ORD-{{ deleteTarget?.id }}?</p>
+    <div class="confirm-actions">
+      <button class="btn-secondary" (click)="cancelDelete()">Cancel</button>
+      <button class="btn-delete" (click)="executeDelete()">Delete</button>
+    </div>
+  </div>
+
+  <div class="panel-overlay" *ngIf="showForm" (click)="closeForm()"></div>
+  <div class="side-panel" [class.open]="showForm">
+    <div class="panel-header">
+      <h2>{{ editingOrder ? 'Edit Order' : 'New Order' }}</h2>
+      <button class="close-btn" (click)="closeForm()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="panel-content">
+      <div *ngIf="formError" class="form-error-banner">
+        <i class="fas fa-circle-exclamation"></i> {{ formError }}
+      </div>
+      <form (ngSubmit)="saveOrder()">
+        <div class="form-group">
+          <label>Customer ID <span class="req">*</span></label>
+          <input type="number" [(ngModel)]="formData.customerId" name="customerId" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label>Status</label>
+          <select [(ngModel)]="formData.status" name="status" class="form-control">
+            <option value="PENDING">PENDING</option>
+            <option value="SHIPPED">SHIPPED</option>
+            <option value="DELIVERED">DELIVERED</option>
+            <option value="CANCELLED">CANCELLED</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <div class="form-group half">
+            <label>Date</label>
+            <input type="date" [(ngModel)]="formData.orderDate" name="orderDate" class="form-control" required>
+          </div>
+          <div class="form-group half">
+            <label>Total Amount <span class="req">*</span></label>
+            <input type="number" [(ngModel)]="formData.totalAmount" name="totalAmount" class="form-control" step="0.01" required>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" (click)="closeForm()">Cancel</button>
+          <button type="submit" class="btn-primary" [disabled]="saving">
+            <span *ngIf="!saving"><i class="fas fa-floppy-disk"></i> Save</span>
+            <span *ngIf="saving" class="spinner"></span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

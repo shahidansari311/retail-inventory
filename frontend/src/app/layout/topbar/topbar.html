@@ -1,15 +1,17 @@
-<div class="topbar-container">
-  <div class="search-bar">
-    <span>🔍</span>
-    <input type="text" placeholder="Search for items, tools, etc.">
+<div class="topbar">
+  <div class="topbar-left">
+    <!-- Removed search bar since it was non-functional -->
   </div>
-  
-  <div class="user-profile">
-    <div class="notification-icon">🔔</div>
-    <div class="avatar"></div>
-    <div class="user-info">
-      <span class="name">Admin User</span>
-      <span class="role">Manager</span>
+
+  <div class="topbar-right">
+    <!-- Removed notification icon since it was non-functional -->
+
+    <div class="user-chip">
+      <div class="avatar">{{ userInitials }}</div>
+      <div class="user-details">
+        <span class="user-name">{{ currentUser?.name || 'User' }}</span>
+        <span class="user-role">{{ currentUser?.role || 'Staff' }}</span>
+      </div>
     </div>
   </div>
 </div>

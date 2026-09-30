@@ -1,111 +1,142 @@
-<div class="dashboard-container">
-  <div class="header">
-    <h1>Dashboard Overview</h1>
-    <p>Welcome back! Here's what's happening with your inventory today.</p>
+<div class="dashboard">
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <h1>Dashboard</h1>
+      <p>Welcome back, {{ userName }}! Here's what's happening today.</p>
+    </div>
+    <div class="header-date">
+      <i class="fas fa-calendar"></i>
+      {{ today | date:'MMMM d, yyyy' }}
+    </div>
   </div>
 
-  <div *ngIf="loading" class="loading-state">
-    <div class="spinner"></div>
-    <p>Loading dashboard statistics...</p>
+  <!-- Loading -->
+  <div *ngIf="loading" class="state-box">
+    <div class="page-spinner"></div>
+    <p>Loading dashboard...</p>
   </div>
 
-  <div *ngIf="error" class="error-state">
+  <!-- Error -->
+  <div *ngIf="error && !loading" class="state-box error-state">
+    <div class="state-icon error"><i class="fas fa-circle-xmark"></i></div>
+    <h3>Something went wrong</h3>
     <p>{{ error }}</p>
-    <button (click)="fetchDashboardStats()" class="btn btn-primary">Retry</button>
+    <button class="btn-primary" (click)="fetchDashboardStats()">
+      <i class="fas fa-rotate-right"></i> Try Again
+    </button>
   </div>
 
-  <div *ngIf="!loading && !error && stats" class="stats-grid">
-    <!-- Sales & Orders -->
-    <div class="stat-card highlight">
-      <div class="stat-icon">
-        <i class="fas fa-shopping-cart"></i>
-      </div>
-      <div class="stat-details">
-        <span class="stat-title">Total Orders</span>
-        <span class="stat-value">{{ stats.totalOrders }}</span>
-      </div>
-    </div>
+  <!-- Empty state -->
+  <div *ngIf="!loading && !error && !hasData" class="state-box empty">
+    <div class="state-icon"><i class="fas fa-chart-pie"></i></div>
+    <h3>No Data Available</h3>
+    <p>Your inventory system is currently empty. Add your first product, supplier, or warehouse to see statistics here.</p>
+    <button class="btn-primary" style="margin-top: 10px;" routerLink="/products" *ngIf="hasAccess(['ADMIN', 'MANAGER'])">
+      <i class="fas fa-plus"></i> Add First Product
+    </button>
+  </div>
 
-    <div class="stat-card warning">
-      <div class="stat-icon">
-        <i class="fas fa-clock"></i>
-      </div>
-      <div class="stat-details">
-        <span class="stat-title">Pending Orders</span>
-        <span class="stat-value">{{ stats.pendingOrders }}</span>
-      </div>
-    </div>
-
-    <div class="stat-card danger">
-      <div class="stat-icon">
-        <i class="fas fa-exclamation-triangle"></i>
-      </div>
-      <div class="stat-details">
-        <span class="stat-title">Low Stock Items</span>
-        <span class="stat-value">{{ stats.lowStockProducts }}</span>
-      </div>
-    </div>
-
-    <!-- Inventory & Products -->
-    <div class="stat-card">
-      <div class="stat-icon">
-        <i class="fas fa-box"></i>
-      </div>
-      <div class="stat-details">
-        <span class="stat-title">Total Products</span>
+  <!-- Stats grid -->
+  <div *ngIf="!loading && !error && hasData" class="stats-grid">
+    <div class="stat-card purple">
+      <div class="stat-icon"><i class="fas fa-box"></i></div>
+      <div class="stat-body">
+        <span class="stat-label">Total Products</span>
         <span class="stat-value">{{ stats.totalProducts }}</span>
       </div>
+      <div class="stat-trend up" *ngIf="stats.totalProducts > 0"><i class="fas fa-arrow-trend-up"></i></div>
     </div>
 
-    <div class="stat-card">
-      <div class="stat-icon">
-        <i class="fas fa-layer-group"></i>
+    <div class="stat-card blue">
+      <div class="stat-icon"><i class="fas fa-shopping-cart"></i></div>
+      <div class="stat-body">
+        <span class="stat-label">Total Orders</span>
+        <span class="stat-value">{{ stats.totalOrders }}</span>
       </div>
-      <div class="stat-details">
-        <span class="stat-title">Categories</span>
+      <div class="stat-trend up" *ngIf="stats.totalOrders > 0"><i class="fas fa-arrow-trend-up"></i></div>
+    </div>
+
+    <div class="stat-card amber">
+      <div class="stat-icon"><i class="fas fa-clock"></i></div>
+      <div class="stat-body">
+        <span class="stat-label">Pending Orders</span>
+        <span class="stat-value">{{ stats.pendingOrders }}</span>
+      </div>
+      <div class="stat-trend neutral"><i class="fas fa-minus"></i></div>
+    </div>
+
+    <div class="stat-card red">
+      <div class="stat-icon"><i class="fas fa-triangle-exclamation"></i></div>
+      <div class="stat-body">
+        <span class="stat-label">Low Stock Items</span>
+        <span class="stat-value">{{ stats.lowStockProducts }}</span>
+      </div>
+      <div class="stat-trend down" *ngIf="stats.lowStockProducts > 0"><i class="fas fa-arrow-trend-down"></i></div>
+    </div>
+
+    <div class="stat-card green">
+      <div class="stat-icon"><i class="fas fa-cubes"></i></div>
+      <div class="stat-body">
+        <span class="stat-label">Total Inventory</span>
+        <span class="stat-value">{{ stats.totalInventoryQuantity }}</span>
+      </div>
+      <div class="stat-trend up" *ngIf="stats.totalInventoryQuantity > 0"><i class="fas fa-arrow-trend-up"></i></div>
+    </div>
+
+    <div class="stat-card teal">
+      <div class="stat-icon"><i class="fas fa-layer-group"></i></div>
+      <div class="stat-body">
+        <span class="stat-label">Categories</span>
         <span class="stat-value">{{ stats.totalCategories }}</span>
       </div>
     </div>
 
-    <div class="stat-card highlight-secondary">
-      <div class="stat-icon">
-        <i class="fas fa-cubes"></i>
-      </div>
-      <div class="stat-details">
-        <span class="stat-title">Total Inventory Qty</span>
-        <span class="stat-value">{{ stats.totalInventoryQuantity }}</span>
-      </div>
-    </div>
-
-    <!-- Partners -->
-    <div class="stat-card">
-      <div class="stat-icon">
-        <i class="fas fa-truck"></i>
-      </div>
-      <div class="stat-details">
-        <span class="stat-title">Suppliers</span>
+    <div class="stat-card indigo">
+      <div class="stat-icon"><i class="fas fa-truck"></i></div>
+      <div class="stat-body">
+        <span class="stat-label">Suppliers</span>
         <span class="stat-value">{{ stats.totalSuppliers }}</span>
       </div>
     </div>
 
-    <div class="stat-card">
-      <div class="stat-icon">
-        <i class="fas fa-users"></i>
-      </div>
-      <div class="stat-details">
-        <span class="stat-title">Customers</span>
+    <div class="stat-card cyan">
+      <div class="stat-icon"><i class="fas fa-users"></i></div>
+      <div class="stat-body">
+        <span class="stat-label">Customers</span>
         <span class="stat-value">{{ stats.totalCustomers }}</span>
       </div>
     </div>
 
-    <div class="stat-card">
-      <div class="stat-icon">
-        <i class="fas fa-warehouse"></i>
-      </div>
-      <div class="stat-details">
-        <span class="stat-title">Warehouses</span>
+    <div class="stat-card violet">
+      <div class="stat-icon"><i class="fas fa-warehouse"></i></div>
+      <div class="stat-body">
+        <span class="stat-label">Warehouses</span>
         <span class="stat-value">{{ stats.totalWarehouses }}</span>
       </div>
+    </div>
+  </div>
+
+  <!-- Quick links -->
+  <div *ngIf="!loading && !error && hasAccess(['ADMIN', 'MANAGER', 'STAFF'])" class="quick-actions">
+    <h3>Quick Actions</h3>
+    <div class="actions-row">
+      <a routerLink="/products" class="action-card" *ngIf="hasAccess(['ADMIN', 'MANAGER'])">
+        <i class="fas fa-plus"></i>
+        <span>Add Product</span>
+      </a>
+      <a routerLink="/orders" class="action-card" *ngIf="hasAccess(['ADMIN', 'MANAGER', 'STAFF'])">
+        <i class="fas fa-file-circle-plus"></i>
+        <span>New Order</span>
+      </a>
+      <a routerLink="/suppliers" class="action-card" *ngIf="hasAccess(['ADMIN', 'MANAGER'])">
+        <i class="fas fa-truck-ramp-box"></i>
+        <span>Add Supplier</span>
+      </a>
+      <a routerLink="/inventory" class="action-card" *ngIf="hasAccess(['ADMIN', 'MANAGER', 'STAFF'])">
+        <i class="fas fa-arrows-rotate"></i>
+        <span>Update Stock</span>
+      </a>
     </div>
   </div>
 </div>

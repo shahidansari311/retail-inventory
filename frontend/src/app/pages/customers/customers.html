@@ -1,0 +1,117 @@
+<div class="products-page">
+  <div class="page-header">
+    <div>
+      <h1>Customers</h1>
+      <p>Manage your customer database</p>
+    </div>
+    <button class="btn-primary" (click)="openAddForm()">
+      <i class="fas fa-plus"></i> Add Customer
+    </button>
+  </div>
+
+  <div *ngIf="loading" class="state-box">
+    <div class="page-spinner"></div>
+    <p>Loading customers...</p>
+  </div>
+
+  <div *ngIf="!loading && !error && customers.length === 0" class="state-box empty">
+    <div class="state-icon"><i class="fas fa-users"></i></div>
+    <h3>No customers yet</h3>
+    <p>Add your first customer to the database.</p>
+    <button class="btn-primary" (click)="openAddForm()">
+      <i class="fas fa-plus"></i> Add First Customer
+    </button>
+  </div>
+
+  <div *ngIf="error && !loading" class="state-box error-state">
+    <div class="state-icon error"><i class="fas fa-circle-xmark"></i></div>
+    <h3>Something went wrong</h3>
+    <p>{{ error }}</p>
+    <button class="btn-primary" (click)="loadCustomers()">
+      <i class="fas fa-rotate-right"></i> Try Again
+    </button>
+  </div>
+
+  <div class="table-container" *ngIf="!loading && customers.length > 0">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>Address</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let customer of customers">
+          <td><span class="sku-badge">CUS-{{ customer.id }}</span></td>
+          <td><strong>{{ customer.name }}</strong></td>
+          <td><a [href]="'mailto:' + customer.email">{{ customer.email }}</a></td>
+          <td>{{ customer.phone }}</td>
+          <td>{{ customer.address }}</td>
+          <td class="actions-cell">
+            <button class="btn-icon edit" (click)="editCustomer(customer)" title="Edit">
+              <i class="fas fa-pen-to-square"></i>
+            </button>
+            <button class="btn-icon delete" (click)="confirmDelete(customer)" title="Delete">
+              <i class="fas fa-trash"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="modal-overlay" *ngIf="deleteConfirming" (click)="cancelDelete()"></div>
+  <div class="confirm-modal" *ngIf="deleteConfirming">
+    <div class="confirm-icon"><i class="fas fa-trash"></i></div>
+    <h3>Delete Customer?</h3>
+    <p>Are you sure you want to delete <strong>{{ deleteTarget?.name }}</strong>?</p>
+    <div class="confirm-actions">
+      <button class="btn-secondary" (click)="cancelDelete()">Cancel</button>
+      <button class="btn-delete" (click)="executeDelete()">Delete</button>
+    </div>
+  </div>
+
+  <div class="panel-overlay" *ngIf="showForm" (click)="closeForm()"></div>
+  <div class="side-panel" [class.open]="showForm">
+    <div class="panel-header">
+      <h2>{{ editingCustomer ? 'Edit Customer' : 'Add Customer' }}</h2>
+      <button class="close-btn" (click)="closeForm()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="panel-content">
+      <div *ngIf="formError" class="form-error-banner">
+        <i class="fas fa-circle-exclamation"></i> {{ formError }}
+      </div>
+      <form (ngSubmit)="saveCustomer()">
+        <div class="form-group">
+          <label>Name <span class="req">*</span></label>
+          <input type="text" [(ngModel)]="formData.name" name="name" class="form-control" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group half">
+            <label>Email <span class="req">*</span></label>
+            <input type="email" [(ngModel)]="formData.email" name="email" class="form-control" required>
+          </div>
+          <div class="form-group half">
+            <label>Phone</label>
+            <input type="text" [(ngModel)]="formData.phone" name="phone" class="form-control">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Address</label>
+          <textarea [(ngModel)]="formData.address" name="address" rows="3" class="form-control"></textarea>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" (click)="closeForm()">Cancel</button>
+          <button type="submit" class="btn-primary" [disabled]="saving">
+            <span *ngIf="!saving"><i class="fas fa-floppy-disk"></i> Save</span>
+            <span *ngIf="saving" class="spinner"></span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

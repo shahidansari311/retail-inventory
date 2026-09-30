@@ -1,62 +1,92 @@
-<div class="login-container">
-  <div class="login-card">
-    <div class="logo">
-      <i class="fas fa-boxes"></i>
-      <h2>RetailPro</h2>
+<div class="auth-page">
+  <div class="auth-left">
+    <div class="auth-brand">
+      <div class="brand-icon"><i class="fas fa-boxes-stacking"></i></div>
+      <h1>RetailPro</h1>
     </div>
-    
-    <h3>Create Account</h3>
-    <p class="subtitle">Sign up to manage your inventory</p>
+    <div class="auth-hero">
+      <h2>Start Managing Your <span>Inventory</span> Today</h2>
+      <p>Create your account and get instant access to powerful inventory management tools.</p>
+    </div>
+    <div class="auth-features">
+      <div class="feature-item">
+        <div class="feature-icon">🚀</div>
+        <span>Get started in minutes</span>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">🏭</div>
+        <span>Multi-warehouse support</span>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">🛡️</div>
+        <span>Role-based access control</span>
+      </div>
+    </div>
+  </div>
 
-    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="login-form">
-      <div class="form-group">
-        <label for="name">Full Name</label>
-        <div class="input-wrapper">
-          <i class="fas fa-user"></i>
-          <input 
-            type="text" 
-            id="name" 
-            formControlName="name" 
-            placeholder="Enter your name">
+  <div class="auth-right">
+    <div class="auth-form-box">
+      <div class="auth-header">
+        <h2>Create Account</h2>
+        <p>Fill in your details to get started</p>
+      </div>
+
+      <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" novalidate>
+        <div class="form-group" [class.has-error]="fieldError('name')">
+          <label for="name">Full Name</label>
+          <div class="input-wrapper">
+            <i class="fas fa-user"></i>
+            <input id="name" type="text" formControlName="name" placeholder="John Doe" autocomplete="name">
+          </div>
+          <span class="field-error" *ngIf="fieldError('name')">
+            <i class="fas fa-circle-exclamation"></i> {{ fieldError('name') }}
+          </span>
         </div>
-      </div>
 
-      <div class="form-group">
-        <label for="email">Email Address</label>
-        <div class="input-wrapper">
-          <i class="fas fa-envelope"></i>
-          <input 
-            type="email" 
-            id="email" 
-            formControlName="email" 
-            placeholder="Enter your email">
+        <div class="form-group" [class.has-error]="fieldError('email')">
+          <label for="email">Email Address</label>
+          <div class="input-wrapper">
+            <i class="fas fa-envelope"></i>
+            <input id="email" type="email" formControlName="email" placeholder="you@company.com" autocomplete="email">
+          </div>
+          <span class="field-error" *ngIf="fieldError('email')">
+            <i class="fas fa-circle-exclamation"></i> {{ fieldError('email') }}
+          </span>
         </div>
-      </div>
 
-      <div class="form-group">
-        <label for="password">Password</label>
-        <div class="input-wrapper">
-          <i class="fas fa-lock"></i>
-          <input 
-            type="password" 
-            id="password" 
-            formControlName="password" 
-            placeholder="Create a password">
+        <div class="form-group">
+          <label for="role">Account Role</label>
+          <div class="input-wrapper">
+            <i class="fas fa-id-badge"></i>
+            <select id="role" formControlName="role">
+              <option value="USER">Standard User (Read-only)</option>
+              <option value="STAFF">Warehouse Staff</option>
+              <option value="MANAGER">Inventory Manager</option>
+              <option value="ADMIN">System Administrator</option>
+            </select>
+          </div>
         </div>
-      </div>
 
-      <div *ngIf="error" class="error-message">
-        {{ error }}
-      </div>
+        <div class="form-group" [class.has-error]="fieldError('password')">
+          <label for="password">Password</label>
+          <div class="input-wrapper">
+            <i class="fas fa-lock"></i>
+            <input id="password" type="password" formControlName="password" placeholder="Min 8 chars, upper, lower &amp; number" autocomplete="new-password">
+          </div>
+          <span class="field-error" *ngIf="fieldError('password')">
+            <i class="fas fa-circle-exclamation"></i> {{ fieldError('password') }}
+          </span>
+        </div>
 
-      <button type="submit" [disabled]="registerForm.invalid || loading" class="btn btn-primary login-btn">
-        <span *ngIf="!loading">Sign Up</span>
-        <span *ngIf="loading" class="spinner"></span>
-      </button>
-      
-      <p class="switch-link">
-        Already have an account? <a routerLink="/login">Sign in</a>
-      </p>
-    </form>
+        <div class="auth-link-row">
+          <a routerLink="/login">Already have an account? Sign in</a>
+        </div>
+
+        <button type="submit" class="submit-btn" [disabled]="loading">
+          <span *ngIf="!loading">Create Account <i class="fas fa-arrow-right"></i></span>
+          <span *ngIf="loading" class="spinner"></span>
+        </button>
+      </form>
+    </div>
   </div>
 </div>

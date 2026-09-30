@@ -1,38 +1,92 @@
-<div class="sidebar-header">
-  <div class="logo">
-    <div class="logo-icon"></div>
-    <h2>Inventory</h2>
+<div class="sidebar-wrap">
+  <!-- Brand -->
+  <div class="sidebar-brand">
+    <div class="brand-icon">
+      <i class="fas fa-boxes-stacking"></i>
+    </div>
+    <h2>RetailPro</h2>
+  </div>
+
+  <!-- Nav -->
+  <span class="nav-section-label">Main Menu</span>
+  <ul class="nav-links">
+    <li>
+      <a routerLink="/dashboard" routerLinkActive="active">
+        <i class="fas fa-chart-pie"></i>
+        Dashboard
+      </a>
+    </li>
+    <li *ngIf="hasAccess(['ADMIN', 'MANAGER'])">
+      <a routerLink="/products" routerLinkActive="active">
+        <i class="fas fa-box"></i>
+        Products
+      </a>
+    </li>
+    <li *ngIf="hasAccess(['ADMIN', 'MANAGER'])">
+      <a routerLink="/categories" routerLinkActive="active">
+        <i class="fas fa-layer-group"></i>
+        Categories
+      </a>
+    </li>
+    <li *ngIf="hasAccess(['ADMIN', 'MANAGER', 'STAFF'])">
+      <a routerLink="/inventory" routerLinkActive="active">
+        <i class="fas fa-cubes"></i>
+        Inventory
+      </a>
+    </li>
+
+    <ng-container *ngIf="hasAccess(['ADMIN', 'MANAGER', 'STAFF'])">
+      <span class="nav-section-label" style="display: block; padding-left: 0; margin-top: 8px;">Operations</span>
+      
+      <li>
+        <a routerLink="/orders" routerLinkActive="active">
+          <i class="fas fa-shopping-cart"></i>
+          Orders
+        </a>
+      </li>
+      <li *ngIf="hasAccess(['ADMIN', 'MANAGER'])">
+        <a routerLink="/purchase-orders" routerLinkActive="active">
+          <i class="fas fa-file-invoice"></i>
+          Purchase Orders
+        </a>
+      </li>
+      <li>
+        <a routerLink="/stock-movements" routerLinkActive="active">
+          <i class="fas fa-arrows-rotate"></i>
+          Stock Movements
+        </a>
+      </li>
+    </ng-container>
+
+    <ng-container *ngIf="hasAccess(['ADMIN', 'MANAGER'])">
+      <span class="nav-section-label" style="display: block; padding-left: 0; margin-top: 8px;">Partners</span>
+
+      <li>
+        <a routerLink="/suppliers" routerLinkActive="active">
+          <i class="fas fa-truck"></i>
+          Suppliers
+        </a>
+      </li>
+      <li>
+        <a routerLink="/customers" routerLinkActive="active">
+          <i class="fas fa-users"></i>
+          Customers
+        </a>
+      </li>
+      <li>
+        <a routerLink="/warehouses" routerLinkActive="active">
+          <i class="fas fa-warehouse"></i>
+          Warehouses
+        </a>
+      </li>
+    </ng-container>
+  </ul>
+
+  <!-- Footer -->
+  <div class="sidebar-footer">
+    <button class="logout-btn" (click)="logout()">
+      <i class="fas fa-right-from-bracket"></i>
+      Logout
+    </button>
   </div>
 </div>
-<ul class="nav-links">
-  <li>
-    <a routerLink="/dashboard" routerLinkActive="active">
-      <span class="icon">📊</span>
-      Dashboard
-    </a>
-  </li>
-  <li>
-    <a routerLink="/products" routerLinkActive="active">
-      <span class="icon">📦</span>
-      All Items
-    </a>
-  </li>
-  <li>
-    <a routerLink="/warehouses" routerLinkActive="active">
-      <span class="icon">🏢</span>
-      Warehouses
-    </a>
-  </li>
-  <li>
-    <a routerLink="/suppliers" routerLinkActive="active">
-      <span class="icon">🚚</span>
-      Suppliers
-    </a>
-  </li>
-  <li>
-    <a (click)="logout()" style="cursor: pointer; margin-top: auto; color: #f87171;">
-      <span class="icon">🚪</span>
-      Logout
-    </a>
-  </li>
-</ul>

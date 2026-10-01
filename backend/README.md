@@ -30,17 +30,17 @@ backend/
 │   │   ├── UserController.java
 │   │   └── GlobalExceptionHandler.java  # friendly {message} mapping (400/409/500)
 │   ├── service/                         # business logic + transactions
-│   │   ├── OrderService.java             # createOrder: validates customer/product, checks inventory,
+│   │   ├── OrderService.java            # createOrder: validates customer/product, checks inventory,
 │   │   │                                # decrements stock, writes SALE movement, recalcs total
-│   │   ├── PurchaseOrderService.java     # create: PENDING + total; updateStatus(RECEIVED):
+│   │   ├── PurchaseOrderService.java    # create: PENDING + total; updateStatus(RECEIVED):
 │   │   │                                # creates/fills inventory, writes PURCHASE movement
-│   │   ├── StockMovementService.java     # create: validates product/warehouse/qty, defaults type/date
+│   │   ├── StockMovementService.java    # create: validates product/warehouse/qty, defaults type/date
 │   │   ├── InventoryService.java
 │   │   ├── ProductService.java
 │   │   ├── CategoryService.java / SupplierService.java / WarehouseService.java / CustomerService.java
-│   │   ├── DashboardService.java         # counts + pendingOrders + lowStock + totalQty
+│   │   ├── DashboardService.java        # counts + pendingOrders + lowStock + totalQty
 │   │   ├── UserService.java / JwtService.java
-│   ├── model/ (JPA entities)             # see §2
+│   ├── model/ (JPA entities)            # see §2
 │   └── repository/ (Spring Data JPA)
 │       ├── ProductRepository.java       # findByCategoryId / findBySupplierId / findByNameContainingIgnoreCase
 │       ├── InventoryRepository.java     # findByWarehouseId / findLowStock
@@ -169,7 +169,6 @@ Notes:
 
 ```mermaid
 erDiagram
-  users ||--o{ orders : places
   customers ||--o{ orders : places
   orders ||--|{ order_items : contains
   products ||--o{ order_items : ordered
@@ -198,14 +197,14 @@ sequenceDiagram
   A->>DB: findByEmail(email)
   A->>A: BCrypt.matches(password)
   alt invalid
-    A-->>U: 401 {message:"Invalid email or password"}
+    A-->>U: 401 {message: Invalid email or password}
   else valid
     A->>J: generateAccessToken + generateRefreshToken
     A->>DB: save refreshToken
     A-->>U: 200 {accessToken, refreshToken, data:{id,name,email,role}}
   end
   U->>U: store tokens + currentUser
-  Note over U,J: Later: POST /api/auth/refresh {refreshToken} → new pair; POST /api/auth/logout clears server token
+  Note over U,J: Later: POST /api/auth/refresh {refreshToken} returns a new pair.<br/>POST /api/auth/logout clears the server token.
 ```
 
 ### 3.2 Generic CRUD update (fixed no-op bug)
@@ -213,15 +212,15 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
   actor U as Angular page
-  participant C as *Controller (e.g. CustomerController)
-  participant S as *Service (e.g. CustomerService)
+  participant C as Controller
+  participant S as Service
   participant DB as PostgreSQL
   U->>C: PUT /api/customers/{id} {name,email,phone,address}
   C->>S: update(id, details)
   S->>DB: findById(id)
   alt missing
     S-->>C: null
-    C-->>U: 200 null (frontend treats as "no longer exists, refresh list")
+    C-->>U: 200 null (frontend treats as gone, refreshes list)
   else found
     S->>S: copy name/email/phone/address onto existing
     S->>DB: save(existing)
@@ -230,6 +229,8 @@ sequenceDiagram
     C-->>U: 200 updated entity
   end
 ```
+
+Shown for `CustomerController` / `CustomerService`; Category, Supplier and Warehouse follow the same flow.
 
 Fixed in this patch: `CustomerService`, `SupplierService`, `WarehouseService`, `CategoryService` previously saved the entity unchanged (edit buttons appeared to do nothing).
 
@@ -242,7 +243,7 @@ sequenceDiagram
   participant OS as OrderService
   participant INV as InventoryRepository
   participant SM as StockMovementRepository
-  participant DB as OrderRepository
+  participant OR as OrderRepository
   U->>OC: POST /api/orders {customer:{id}, totalAmount, items:[]}
   OC->>OS: createOrder(request)
   OS->>OS: load customer or 400 "Customer not found"
@@ -255,17 +256,17 @@ sequenceDiagram
       alt none
         OS-->>U: 400 "Insufficient inventory for product: X"
       else found
-        OS->>INV: qty -= item.qty + save
+        OS->>INV: qty -= item.qty, then save
         OS->>SM: save {product, warehouse, type:SALE, qty, now}
-        OS->>OS: unitPrice = product.price; total += price*qty
+        OS->>OS: unitPrice = product.price, total += price * qty
       end
     end
   end
-  OS->>DB: save(order)
-  DB-->>U: 200 Order with nested customer + items
+  OS->>OR: save(order)
+  OR-->>U: 200 Order with nested customer + items
 ```
 
-Frontend sends `customer:{id}` (mapped from `customerId` dropdown) and `items:[]` when no line items; edit uses `PUT /api/orders/{id}` (NEW — previously only `/{id}/status` existed, so Edit returned 404).
+Frontend sends `customer:{id}` (mapped from the `customerId` dropdown) and `items:[]` when there are no line items. Edit uses `PUT /api/orders/{id}` (NEW — previously only `/{id}/status` existed, so Edit returned 404).
 
 ### 3.4 Purchase Order receive (stock-in + PURCHASE movement)
 
@@ -281,14 +282,18 @@ sequenceDiagram
   PS->>PS: status=PENDING, orderDate=now, total from items
   PS-->>U: 200 PO
   U->>PC: PUT /api/purchase-orders/{id} {status:RECEIVED}
-  PC->>PS: update → updateStatus(RECEIVED)
-  PS->>PS: first warehouse = default
-  loop each PO item
-    PS->>INV: find-or-create (product, warehouse)
-    PS->>INV: qty += item.qty + save
-    PS->>SM: save {product, warehouse, type:PURCHASE, qty, now}
+  PC->>PS: update, which calls updateStatus(RECEIVED)
+  PS->>PS: pick first warehouse as default
+  alt no warehouse
+    PS-->>U: 400 "No warehouse found"
+  else warehouse exists
+    loop each PO item
+      PS->>INV: find-or-create (product, warehouse)
+      PS->>INV: qty += item.qty, then save
+      PS->>SM: save {product, warehouse, type:PURCHASE, qty, now}
+    end
+    PS-->>U: 200 RECEIVED PO
   end
-  PS-->>U: 200 RECEIVED PO
 ```
 
 ### 3.5 Record Stock Movement (NEW endpoint)
@@ -307,7 +312,9 @@ sequenceDiagram
   DB-->>U: 200 movement {id, product:{...}, warehouse:{...}, type, quantity, reason, movementDate}
 ```
 
-Previously only `GET` existed, so “Record Movement” failed with 405. `type` and `movementType` are interchangeable.
+Previously only `GET` existed, so "Record Movement" failed with 405. `type` and `movementType` are interchangeable.
+
+> Note: this endpoint only saves the `StockMovement` row. It does not adjust `Inventory` quantities, so manual movements recorded here are log-only. Stock levels change through orders (SALE) and received purchase orders (PURCHASE).
 
 ## 4. REST API table
 
@@ -334,8 +341,8 @@ Previously only `GET` existed, so “Record Movement” failed with 405. `type` 
 | GET | `/dashboard/stats` | — | `{totalProducts,totalCategories,totalSuppliers,totalWarehouses,totalCustomers,totalOrders,pendingOrders,lowStockProducts,totalInventoryQuantity}` | — |
 
 Error envelope is always `{ "message": "<user-friendly sentence>" }`:
-- `400` validation / bad JSON (“Some details look incorrect…”)
-- `401` bad login / missing token, `403` forbidden, `404` not found, `409` in-use conflict, `429` rate-limited, `500` generic (“Something went wrong on our side…”).
+- `400` validation / bad JSON ("Some details look incorrect…")
+- `401` bad login / missing token, `403` forbidden, `404` not found, `409` in-use conflict, `429` rate-limited, `500` generic ("Something went wrong on our side…").
 
 ## 5. Run locally
 

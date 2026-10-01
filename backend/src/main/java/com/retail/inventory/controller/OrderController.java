@@ -32,7 +32,13 @@ public class OrderController {
 
     @PutMapping("/{id}/status")
     public Order updateStatus(@PathVariable Long id, @RequestBody String status) {
+        status = status.replace("\"", "").trim();
         return service.updateStatus(id, status);
+    }
+
+    @PutMapping("/{id}")
+    public Order update(@PathVariable Long id, @RequestBody Order details) {
+        return service.update(id, details);
     }
 
     @DeleteMapping("/{id}")

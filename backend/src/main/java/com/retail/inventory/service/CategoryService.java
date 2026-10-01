@@ -30,6 +30,8 @@ public class CategoryService {
         Optional<Category> optional = repository.findById(id);
         if (optional.isPresent()) {
             Category existing = optional.get();
+            existing.setName(entityDetails.getName());
+            existing.setDescription(entityDetails.getDescription());
             return repository.save(existing);
         }
         return null;

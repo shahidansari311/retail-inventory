@@ -101,6 +101,32 @@ public class PurchaseOrderService {
         return null;
     }
 
+    public PurchaseOrder update(Long id, PurchaseOrder details) {
+        Optional<PurchaseOrder> optional = purchaseOrderRepository.findById(id);
+        if (optional.isPresent()) {
+            PurchaseOrder po = optional.get();
+            if (details.getSupplier() != null && details.getSupplier().getId() != null) {
+                po.setSupplier(details.getSupplier());
+            }
+            if (details.getStatus() != null) {
+                // Route RECEIVED through status flow so inventory is updated
+                if ("RECEIVED".equalsIgnoreCase(details.getStatus()) && !"RECEIVED".equalsIgnoreCase(po.getStatus())) {
+                    updateStatus(id, details.getStatus());
+                    return purchaseOrderRepository.findById(id).orElse(po);
+                }
+                po.setStatus(details.getStatus());
+            }
+            if (details.getOrderDate() != null) {
+                po.setOrderDate(details.getOrderDate());
+            }
+            if (details.getTotalAmount() != null) {
+                po.setTotalAmount(details.getTotalAmount());
+            }
+            return purchaseOrderRepository.save(po);
+        }
+        return null;
+    }
+
     public void delete(Long id) {
         purchaseOrderRepository.deleteById(id);
     }

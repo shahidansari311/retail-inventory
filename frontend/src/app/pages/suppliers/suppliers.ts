@@ -33,9 +33,9 @@ export class Suppliers implements OnInit {
     this.loading = true;
     this.error = '';
     this.supplierService.getAll().subscribe({
-      next: (data) => { this.suppliers = data; this.loading = false; this.cdr.detectChanges(); },
+      next: (data) => { this.suppliers = Array.isArray(data) ? data : []; this.loading = false; this.cdr.detectChanges(); },
       error: (err) => {
-        this.error = 'Failed to load suppliers.';
+        this.error = 'We could not load suppliers. Please try again.';
         this.loading = false;
         this.toast.error(this.error);
         this.cdr.detectChanges();
@@ -82,7 +82,7 @@ export class Suppliers implements OnInit {
         this.cdr.detectChanges();
       },
       error: (err) => {
-        this.formError = err.error?.message || 'Failed to save supplier.';
+        this.formError = err.error?.message || 'We could not save this supplier. Please check your inputs and try again.';
         this.toast.error(this.formError);
         this.saving = false;
         this.cdr.detectChanges();
@@ -109,9 +109,10 @@ export class Suppliers implements OnInit {
         this.toast.success('Supplier deleted successfully.');
         this.loadSuppliers();
         this.cancelDelete();
+        this.cdr.detectChanges();
       },
       error: (err) => {
-        this.toast.error('Failed to delete supplier.');
+        this.toast.error(err.status===404?'This supplier was already deleted. Refreshing the list.':err.status===403?'You do not have permission to delete suppliers.':'We could not delete this supplier. Please try again.');
         this.cancelDelete();
       }
     });

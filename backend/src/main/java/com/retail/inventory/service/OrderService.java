@@ -103,6 +103,29 @@ public class OrderService {
         return null;
     }
 
+    public Order update(Long id, Order details) {
+        Optional<Order> optional = orderRepository.findById(id);
+        if (optional.isPresent()) {
+            Order order = optional.get();
+            if (details.getCustomer() != null && details.getCustomer().getId() != null) {
+                Customer customer = customerRepository.findById(details.getCustomer().getId())
+                        .orElseThrow(() -> new RuntimeException("Selected customer no longer exists. Please choose another customer."));
+                order.setCustomer(customer);
+            }
+            if (details.getStatus() != null) {
+                order.setStatus(details.getStatus());
+            }
+            if (details.getOrderDate() != null) {
+                order.setOrderDate(details.getOrderDate());
+            }
+            if (details.getTotalAmount() != null) {
+                order.setTotalAmount(details.getTotalAmount());
+            }
+            return orderRepository.save(order);
+        }
+        return null;
+    }
+
     public void delete(Long id) {
         orderRepository.deleteById(id);
     }

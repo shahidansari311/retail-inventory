@@ -36,7 +36,7 @@
     </li>
 
     <ng-container *ngIf="hasAccess(['ADMIN', 'MANAGER', 'STAFF'])">
-      <span class="nav-section-label" style="display: block; padding-left: 0; margin-top: 8px;">Operations</span>
+      <span class="nav-section-label operations-label">Operations</span>
       
       <li>
         <a routerLink="/orders" routerLinkActive="active">
@@ -59,7 +59,7 @@
     </ng-container>
 
     <ng-container *ngIf="hasAccess(['ADMIN', 'MANAGER'])">
-      <span class="nav-section-label" style="display: block; padding-left: 0; margin-top: 8px;">Partners</span>
+      <span class="nav-section-label operations-label">Partners</span>
 
       <li>
         <a routerLink="/suppliers" routerLinkActive="active">
@@ -83,8 +83,8 @@
   </ul>
 
   <!-- Footer -->
-  <div class="sidebar-footer" style="display: flex; flex-direction: column; gap: 8px;">
-    <button class="logout-btn" style="background: transparent; border: 1px solid var(--border); color: var(--text-secondary);" routerLink="/profile">
+  <div class="sidebar-footer">
+    <button class="profile-btn" routerLink="/profile">
       <i class="fas fa-user"></i>
       Profile
     </button>

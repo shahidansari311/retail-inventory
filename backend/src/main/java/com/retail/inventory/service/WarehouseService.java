@@ -30,7 +30,9 @@ public class WarehouseService {
         Optional<Warehouse> optional = repository.findById(id);
         if (optional.isPresent()) {
             Warehouse existing = optional.get();
-            // TODO: Update fields
+            existing.setName(entityDetails.getName());
+            existing.setLocation(entityDetails.getLocation());
+            existing.setCapacity(entityDetails.getCapacity());
             return repository.save(existing);
         }
         return null;

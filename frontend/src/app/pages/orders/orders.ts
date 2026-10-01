@@ -43,9 +43,12 @@ export class Orders implements OnInit {
     this.loading = true;
     this.error = '';
     this.orderService.getAll().subscribe({
-      next: (data) => { this.orders = data; this.loading = false; this.cdr.detectChanges(); },
+      next: (data) => { this.orders = Array.isArray(data) ? data : []; this.loading = false; this.cdr.detectChanges(); },
       error: (err) => {
-        this.error = 'Failed to load orders.';
+        this.error = err.status === 401 ? 'Your session has expired. Please log in again.'
+                   : err.status === 403 ? 'You do not have permission to view orders.'
+                   : err.status === 0 ? 'Cannot reach the server. Check your internet and try again.'
+                   : 'We could not load orders. Please try again.';
         this.loading = false;
         this.toast.error(this.error);
         this.cdr.detectChanges();
@@ -70,11 +73,13 @@ export class Orders implements OnInit {
 
   editOrder(order: any) {
     this.editingOrder = order;
-    this.formData = { ...order };
-    // Handle date formatting if it comes as a full ISO string
-    if (this.formData.orderDate && this.formData.orderDate.length > 10) {
-      this.formData.orderDate = this.formData.orderDate.slice(0, 10);
-    }
+    this.formData = {
+      customerId: order.customer?.id ?? order.customerId ?? null,
+      orderDate: order.orderDate ? String(order.orderDate).slice(0, 10) : '',
+      status: order.status ?? 'PENDING',
+      totalAmount: order.totalAmount ?? 0,
+      items: order.items ?? []
+    };
     this.formError = '';
     this.showForm = true;
     this.cdr.detectChanges();
@@ -88,6 +93,17 @@ export class Orders implements OnInit {
   }
 
   saveOrder() {
+    if (!this.formData.customerId) {
+      this.formError = 'Please select a customer.';
+      this.toast.warning(this.formError);
+      this.cdr.detectChanges();
+      return;
+    }
+    if (this.formData.totalAmount == null || Number(this.formData.totalAmount) < 0) {
+      this.formError = 'Total amount cannot be negative.';
+      this.cdr.detectChanges();
+      return;
+    }
     this.saving = true;
     this.formError = '';
 
@@ -132,6 +148,16 @@ export class Orders implements OnInit {
     });
   }
 
+  getCustomerLabel(order: any): string {
+    if (order?.customer?.name) return `${order.customer.name} (ID: ${order.customer.id})`;
+    if (order?.customer?.id != null) return `Customer #${order.customer.id}`;
+    if (order?.customerId != null) {
+      const found = this.customers.find(c => c.id === order.customerId);
+      return found ? `${found.name} (ID: ${found.id})` : `Customer #${order.customerId}`;
+    }
+    return '—';
+  }
+
   confirmDelete(order: any) {
     this.deleteTarget = order;
     this.deleteConfirming = true;
@@ -151,10 +177,17 @@ export class Orders implements OnInit {
         this.toast.success('Order deleted successfully.');
         this.loadOrders();
         this.cancelDelete();
+        this.cdr.detectChanges();
       },
       error: (err) => {
-        this.toast.error('Failed to delete order.');
+        const msg = err.status === 404 ? 'This order was already deleted. Refreshing the list.'
+                  : err.status === 403 ? 'You do not have permission to delete orders.'
+                  : err.status === 409 ? 'This order is in use and cannot be deleted.'
+                  : 'We could not delete this order. Please try again.';
+        this.toast.error(msg);
+        if (err.status === 404) this.loadOrders();
         this.cancelDelete();
+        this.cdr.detectChanges();
       }
     });
   }

@@ -34,4 +34,9 @@ public class StockMovementController {
     public List<StockMovement> getByWarehouseId(@PathVariable Long warehouseId) {
         return service.getByWarehouseId(warehouseId);
     }
+
+    @PostMapping
+    public StockMovement create(@RequestBody StockMovement movement) {
+        return service.create(movement);
+    }
 }

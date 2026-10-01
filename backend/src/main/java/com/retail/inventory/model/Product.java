@@ -13,6 +13,7 @@ public class Product {
     private String sku;
     private String description;
     private BigDecimal price;
+    private Integer quantity;
 
     @ManyToOne
     @JoinColumn(name = "category_id")
@@ -35,6 +36,8 @@ public class Product {
     public void setDescription(String description) { this.description = description; }
     public BigDecimal getPrice() { return price; }
     public void setPrice(BigDecimal price) { this.price = price; }
+    public Integer getQuantity() { return quantity; }
+    public void setQuantity(Integer quantity) { this.quantity = quantity; }
     public Category getCategory() { return category; }
     public void setCategory(Category category) { this.category = category; }
     public Supplier getSupplier() { return supplier; }

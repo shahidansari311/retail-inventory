@@ -45,14 +45,16 @@
           <th>ID</th>
           <th>Name</th>
           <th>Location</th>
+          <th>Capacity</th>
           <th>Actions</th>
         </tr>
       </thead>
       <tbody>
         <tr *ngFor="let warehouse of warehouses">
           <td>{{ warehouse.id }}</td>
-          <td><strong>{{ warehouse.name }}</strong></td>
+          <td><strong>{{ warehouse.name || '—' }}</strong></td>
           <td class="desc-cell">{{ warehouse.location || '—' }}</td>
+          <td>{{ warehouse.capacity ?? '—' }}</td>
           <td class="actions-cell">
             <button class="btn-icon edit" (click)="editWarehouse(warehouse)" title="Edit warehouse">
               <i class="fas fa-pen-to-square"></i>
@@ -103,6 +105,11 @@
         <div class="form-group">
           <label>Location <span class="req">*</span></label>
           <input type="text" [(ngModel)]="formData.location" name="location" class="form-control" placeholder="e.g. New York, NY" required>
+        </div>
+
+        <div class="form-group">
+          <label>Capacity</label>
+          <input type="number" [(ngModel)]="formData.capacity" name="capacity" min="0" class="form-control" placeholder="e.g. 1000">
         </div>
 
         <div class="form-actions">

@@ -19,7 +19,7 @@ export class Warehouses implements OnInit {
 
   showForm = false;
   editingWarehouse: any = null;
-  formData: any = { name: '', location: '' };
+  formData: any = { name: '', location: '', capacity: null };
   formError = '';
 
   deleteTarget: any = null;
@@ -51,7 +51,7 @@ export class Warehouses implements OnInit {
 
   openAddForm() {
     this.editingWarehouse = null;
-    this.formData = { name: '', location: '' };
+    this.formData = { name: '', location: '', capacity: null };
     this.formError = '';
     this.showForm = true;
     this.cdr.detectChanges();
@@ -59,7 +59,7 @@ export class Warehouses implements OnInit {
 
   editWarehouse(warehouse: any) {
     this.editingWarehouse = warehouse;
-    this.formData = { ...warehouse };
+    this.formData = { name: warehouse.name ?? '', location: warehouse.location ?? '', capacity: warehouse.capacity ?? null };
     this.formError = '';
     this.showForm = true;
     this.cdr.detectChanges();
@@ -73,34 +73,39 @@ export class Warehouses implements OnInit {
   }
 
   validateForm(): string {
-    if (!this.formData.name?.trim()) return 'Warehouse name is required.';
-    if (!this.formData.location?.trim()) return 'Location is required.';
+    if (!this.formData.name?.trim()) return 'Please enter a warehouse name.';
+    if (!this.formData.location?.trim()) return 'Please enter a location.';
+    if (this.formData.capacity != null && Number(this.formData.capacity) < 0) return 'Capacity cannot be negative.';
     return '';
   }
 
   saveWarehouse() {
     const err = this.validateForm();
-    if (err) { this.formError = err; this.cdr.detectChanges(); return; }
+    if (err) { this.formError = err; this.toast.warning(err); this.cdr.detectChanges(); return; }
 
     this.saving = true;
     this.formError = '';
+    const payload: any = {
+      name: this.formData.name?.trim(),
+      location: this.formData.location?.trim(),
+      capacity: this.formData.capacity != null && this.formData.capacity !== '' ? Number(this.formData.capacity) : null
+    };
     const action = this.editingWarehouse
-      ? this.warehouseService.update(this.editingWarehouse.id, this.formData)
-      : this.warehouseService.create(this.formData);
+      ? this.warehouseService.update(this.editingWarehouse.id, payload)
+      : this.warehouseService.create(payload);
 
     action.subscribe({
       next: () => {
-        this.toast.success(this.editingWarehouse ? 'Warehouse updated successfully!' : 'Warehouse created successfully!');
+        this.toast.success(this.editingWarehouse ? 'Warehouse updated successfully!' : 'Warehouse added successfully!');
         this.loadWarehouses();
         this.closeForm();
         this.saving = false;
         this.cdr.detectChanges();
       },
       error: (err) => {
-        this.formError = err.status === 409 ? 'A warehouse with this name already exists.'
-                       : err.status === 403 ? 'You do not have permission to do this.'
-                       : err.status === 400 ? 'Invalid data. Please check your inputs.'
-                       : err.error?.message || 'Failed to save warehouse.';
+        this.formError = err.error?.message || (err.status === 403 ? 'You do not have permission to do this. Please ask your manager.'
+                       : err.status === 0 ? 'Cannot reach the server. Check your internet and try again.'
+                       : 'We could not save this warehouse. Please try again.');
         this.toast.error(this.formError);
         this.saving = false;
         this.cdr.detectChanges();
@@ -130,13 +135,15 @@ export class Warehouses implements OnInit {
         this.toast.success(`"${name}" deleted successfully.`);
         this.loadWarehouses();
         this.deleteTarget = null;
+        this.cdr.detectChanges();
       },
       error: (err) => {
-        const msg = err.status === 403 ? 'You do not have permission to delete this warehouse.'
-                  : err.status === 404 ? 'Warehouse not found — it may have already been deleted.'
-                  : err.status === 409 ? 'Cannot delete warehouse because it is in use.'
-                  : 'Failed to delete warehouse.';
+        const msg = err.status === 403 ? 'You do not have permission to delete warehouses.'
+                  : err.status === 404 ? 'This warehouse was already deleted. Refreshing the list.'
+                  : err.status === 409 ? 'This warehouse is used by inventory and cannot be deleted.'
+                  : 'We could not delete this warehouse. Please try again.';
         this.toast.error(msg);
+        if (err.status === 404) this.loadWarehouses();
         this.deleteTarget = null;
         this.cdr.detectChanges();
       }

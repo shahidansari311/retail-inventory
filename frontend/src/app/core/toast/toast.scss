@@ -73,10 +73,18 @@
   }
 
   &.toast-info {
-    background: rgba(99, 102, 241, 0.12);
-    border-color: rgba(99, 102, 241, 0.3);
-    color: #818cf8;
-    .toast-close { color: #818cf8; }
+    background: rgba(242, 172, 15, 0.12);
+    border-color: rgba(242, 172, 15, 0.35);
+    color: var(--primary-hover);
+    .toast-close { color: var(--primary-hover); }
+  }
+}
+
+@media (max-width: 480px) {
+  .toast-container {
+    left: 16px;
+    right: 16px;
+    max-width: none;
   }
 }
 

@@ -36,7 +36,7 @@ export class Categories implements OnInit {
     this.loading = true;
     this.error = '';
     this.categoryService.getAll().subscribe({
-      next: (data) => { this.categories = data; this.loading = false; this.cdr.detectChanges(); },
+      next: (data) => { this.categories = Array.isArray(data) ? data : []; this.loading = false; this.cdr.detectChanges(); },
       error: (err) => {
         this.error = err.status === 401 ? 'Session expired. Please log in again.'
                    : err.status === 403 ? 'You do not have permission to view categories.'
@@ -129,13 +129,15 @@ export class Categories implements OnInit {
         this.toast.success(`"${name}" deleted successfully.`);
         this.loadCategories();
         this.deleteTarget = null;
+        this.cdr.detectChanges();
       },
       error: (err) => {
-        const msg = err.status === 403 ? 'You do not have permission to delete this category.'
-                  : err.status === 404 ? 'Category not found — it may have already been deleted.'
-                  : err.status === 409 ? 'Cannot delete category because it is in use.'
-                  : 'Failed to delete category.';
+        const msg = err.status === 403 ? 'You do not have permission to delete categories.'
+                  : err.status === 404 ? 'This category was already deleted. Refreshing the list.'
+                  : err.status === 409 ? 'This category is used by products and cannot be deleted.'
+                  : 'We could not delete this category. Please try again.';
         this.toast.error(msg);
+        if (err.status === 404) this.loadCategories();
         this.deleteTarget = null;
         this.cdr.detectChanges();
       }

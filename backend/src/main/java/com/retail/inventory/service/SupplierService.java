@@ -30,7 +30,10 @@ public class SupplierService {
         Optional<Supplier> optional = repository.findById(id);
         if (optional.isPresent()) {
             Supplier existing = optional.get();
-            // TODO: Update fields
+            existing.setName(entityDetails.getName());
+            existing.setContactEmail(entityDetails.getContactEmail());
+            existing.setContactPhone(entityDetails.getContactPhone());
+            existing.setAddress(entityDetails.getAddress());
             return repository.save(existing);
         }
         return null;

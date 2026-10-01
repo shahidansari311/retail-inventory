@@ -1,17 +1,16 @@
 <div class="topbar">
   <div class="topbar-left">
-    <!-- Removed search bar since it was non-functional -->
+    <span class="page-title">RetailPro</span>
   </div>
 
   <div class="topbar-right">
-    <!-- Removed notification icon since it was non-functional -->
-
-    <div class="user-chip" routerLink="/profile" style="cursor: pointer;" title="View Profile">
+    <div class="user-chip" routerLink="/profile" title="View Profile">
       <div class="avatar">{{ userInitials }}</div>
       <div class="user-details">
         <span class="user-name">{{ currentUser?.name || 'User' }}</span>
         <span class="user-role">{{ currentUser?.role || 'Staff' }}</span>
       </div>
+      <i class="fas fa-chevron-right chip-arrow"></i>
     </div>
   </div>
 </div>

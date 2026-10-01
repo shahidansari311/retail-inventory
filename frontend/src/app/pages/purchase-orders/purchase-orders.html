@@ -47,12 +47,12 @@
       <tbody>
         <tr *ngFor="let po of purchaseOrders">
           <td><span class="sku-badge">PO-{{ po.id }}</span></td>
-          <td><strong>Supplier #{{ po.supplierId }}</strong></td>
-          <td>{{ po.orderDate | date:'mediumDate' }}</td>
+          <td><strong>{{ getSupplierLabel(po) }}</strong></td>
+          <td>{{ po.orderDate ? (po.orderDate | date:'mediumDate') : '—' }}</td>
           <td>
-            <span class="qty-badge" [class.low]="po.status === 'PENDING'">{{ po.status }}</span>
+            <span class="qty-badge" [class.low]="po.status === 'PENDING'">{{ po.status || '—' }}</span>
           </td>
-          <td><span class="price">${{ po.totalAmount | number:'1.2-2' }}</span></td>
+          <td><span class="price">{{ po.totalAmount != null ? '$' + (po.totalAmount | number:'1.2-2') : '—' }}</span></td>
           <td class="actions-cell">
             <button class="btn-icon edit" (click)="editPO(po)" title="Edit">
               <i class="fas fa-pen-to-square"></i>

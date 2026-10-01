@@ -49,19 +49,19 @@
         <tr *ngFor="let m of movements">
           <td><span class="sku-badge">MOV-{{ m.id }}</span></td>
           <td>
-            <span class="qty-badge" [class.low]="m.movementType === 'OUT'" [style.background]="m.movementType === 'IN' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)'" [style.color]="m.movementType === 'IN' ? '#34d399' : '#f87171'">
-              {{ m.movementType }}
+            <span class="qty-badge" [class.low]="getMovementType(m) === 'OUT' || getMovementType(m) === 'SALE'">
+              {{ getMovementType(m) }}
             </span>
           </td>
-          <td><strong>#{{ m.productId }}</strong></td>
-          <td>Warehouse #{{ m.warehouseId }}</td>
+          <td><strong>{{ getProductLabel(m) }}</strong></td>
+          <td>{{ getWarehouseLabel(m) }}</td>
           <td>
-            <span [style.color]="m.movementType === 'IN' ? '#34d399' : '#f87171'">
-              {{ m.movementType === 'IN' ? '+' : '-' }}{{ m.quantity }}
+            <span class="price">
+              {{ (getMovementType(m) === 'OUT' || getMovementType(m) === 'SALE') ? '-' : '+' }}{{ m.quantity ?? '—' }}
             </span>
           </td>
-          <td>{{ m.reason }}</td>
-          <td>{{ m.movementDate | date:'short' }}</td>
+          <td>{{ m.reason || '—' }}</td>
+          <td>{{ m.movementDate ? (m.movementDate | date:'short') : '—' }}</td>
         </tr>
       </tbody>
     </table>

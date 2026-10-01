@@ -59,6 +59,7 @@ export class Login {
                   : err.error?.message || 'Login failed. Please try again.';
         this.toast.error(msg);
         this.loading = false;
+        this.cdr.detectChanges();
       }
     });
   }

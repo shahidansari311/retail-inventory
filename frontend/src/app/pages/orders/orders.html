@@ -47,12 +47,12 @@
       <tbody>
         <tr *ngFor="let order of orders">
           <td><span class="sku-badge">ORD-{{ order.id }}</span></td>
-          <td><strong>Customer #{{ order.customerId }}</strong></td>
-          <td>{{ order.orderDate | date:'mediumDate' }}</td>
+          <td><strong>{{ getCustomerLabel(order) }}</strong></td>
+          <td>{{ order.orderDate ? (order.orderDate | date:'mediumDate') : '—' }}</td>
           <td>
-            <span class="qty-badge" [class.low]="order.status === 'PENDING'">{{ order.status }}</span>
+            <span class="qty-badge" [class.low]="order.status === 'PENDING'">{{ order.status || '—' }}</span>
           </td>
-          <td><span class="price">${{ order.totalAmount | number:'1.2-2' }}</span></td>
+          <td><span class="price">{{ order.totalAmount != null ? '$' + (order.totalAmount | number:'1.2-2') : '—' }}</span></td>
           <td class="actions-cell">
             <button class="btn-icon edit" (click)="editOrder(order)" title="Edit">
               <i class="fas fa-pen-to-square"></i>

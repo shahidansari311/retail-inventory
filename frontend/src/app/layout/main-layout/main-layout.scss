@@ -28,4 +28,32 @@
   overflow-y: auto;
   flex-grow: 1;
   background: var(--bg-dark);
+  animation: fadeUp 0.35s ease;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 900px) {
+  .sidebar {
+    width: 220px;
+  }
+  .page-content {
+    padding: 20px 18px;
+  }
+}
+
+@media (max-width: 720px) {
+  .layout-container {
+    flex-direction: column;
+  }
+  .sidebar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--border-color);
+    max-height: 56vh;
+    overflow-y: auto;
+  }
 }

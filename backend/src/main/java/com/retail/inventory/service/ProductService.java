@@ -46,6 +46,7 @@ public class ProductService {
             existing.setSku(productDetails.getSku());
             existing.setDescription(productDetails.getDescription());
             existing.setPrice(productDetails.getPrice());
+            existing.setQuantity(productDetails.getQuantity());
             existing.setCategory(productDetails.getCategory());
             existing.setSupplier(productDetails.getSupplier());
             return repository.save(existing);

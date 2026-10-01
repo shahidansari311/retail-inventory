@@ -48,20 +48,55 @@ export class Inventory implements OnInit {
     this.error = '';
     this.inventoryService.getAll().subscribe({
       next: (data) => { 
-        this.inventoryItems = data; 
+        this.inventoryItems = Array.isArray(data) ? data : []; 
         this.loading = false; 
         this.cdr.detectChanges();
       },
       error: (err) => {
-        this.error = err.status === 401 ? 'Session expired. Please log in again.'
-                   : err.status === 403 ? 'You do not have permission to view inventory.'
-                   : err.status === 0   ? 'Cannot reach server. Check your connection.'
-                   : 'Failed to load inventory.';
+        this.error = this.friendlyLoadError(err, 'inventory');
         this.loading = false;
         this.cdr.detectChanges();
         this.toast.error(this.error);
       }
     });
+  }
+
+  getProductLabel(item: any): string {
+    if (item?.product?.name) return `${item.product.name} (ID: ${item.product.id})`;
+    if (item?.product?.id != null) return `Product #${item.product.id}`;
+    if (item?.productId != null) {
+      const found = this.products.find(p => p.id === item.productId);
+      return found ? `${found.name} (ID: ${found.id})` : `Product #${item.productId}`;
+    }
+    return '—';
+  }
+
+  getWarehouseLabel(item: any): string {
+    if (item?.warehouse?.name) return `${item.warehouse.name} (ID: ${item.warehouse.id})`;
+    if (item?.warehouse?.id != null) return `Warehouse #${item.warehouse.id}`;
+    if (item?.warehouseId != null) {
+      const found = this.warehouses.find(w => w.id === item.warehouseId);
+      return found ? `${found.name} (ID: ${found.id})` : `Warehouse #${item.warehouseId}`;
+    }
+    return '—';
+  }
+
+  friendlyLoadError(err: any, what: string): string {
+    if (err.status === 401) return 'Your session has expired. Please log in again.';
+    if (err.status === 403) return `You do not have permission to view ${what}. Please ask your manager.`;
+    if (err.status === 0) return 'Cannot reach the server. Check your internet and try again.';
+    if (err.status === 404) return `We could not find ${what}. It may have been removed.`;
+    if (err.status >= 500) return 'Our server is having trouble right now. Please try again in a moment.';
+    return `We could not load ${what}. Please try again.`;
+  }
+
+  friendlySaveError(err: any): string {
+    if (err.status === 400 || err.status === 409) return err.error?.message || 'Please check your inputs and try again.';
+    if (err.status === 403) return 'You do not have permission to do this. Please ask your manager.';
+    if (err.status === 404) return 'This record no longer exists. Please refresh the list.';
+    if (err.status === 0) return 'Cannot reach the server. Check your internet and try again.';
+    if (err.status >= 500) return 'Our server is having trouble saving. Please try again in a moment.';
+    return err.error?.message || 'We could not save. Please check your inputs and try again.';
   }
 
   loadProducts() {
@@ -88,7 +123,12 @@ export class Inventory implements OnInit {
 
   editInventory(item: any) {
     this.editingInventory = item;
-    this.formData = { ...item };
+    this.formData = {
+      productId: item.product?.id ?? item.productId ?? null,
+      warehouseId: item.warehouse?.id ?? item.warehouseId ?? null,
+      quantity: item.quantity ?? 0,
+      reorderLevel: item.reorderLevel ?? null
+    };
     this.formError = '';
     this.showForm = true;
     this.cdr.detectChanges();
@@ -102,9 +142,9 @@ export class Inventory implements OnInit {
   }
 
   validateForm(): string {
-    if (!this.formData.productId) return 'Product ID is required.';
-    if (!this.formData.warehouseId) return 'Warehouse ID is required.';
-    if (this.formData.quantity < 0) return 'Quantity cannot be negative.';
+    if (this.formData.productId == null) return 'Please select a product.';
+    if (this.formData.warehouseId == null) return 'Please select a warehouse.';
+    if (this.formData.quantity == null || this.formData.quantity < 0) return 'Quantity cannot be negative. Please enter 0 or more.';
     return '';
   }
 
@@ -131,16 +171,14 @@ export class Inventory implements OnInit {
 
     action.subscribe({
       next: () => {
-        this.toast.success(this.editingInventory ? 'Inventory updated successfully!' : 'Inventory created successfully!');
+        this.toast.success(this.editingInventory ? 'Inventory updated successfully!' : 'Inventory record added successfully!');
         this.loadInventory();
         this.closeForm();
         this.saving = false;
         this.cdr.detectChanges();
       },
       error: (err) => {
-        this.formError = err.status === 403 ? 'You do not have permission to do this.'
-                       : err.status === 400 ? 'Invalid data. Please check your inputs.'
-                       : err.error?.message || 'Failed to save inventory.';
+        this.formError = this.friendlySaveError(err);
         this.toast.error(this.formError);
         this.saving = false;
         this.cdr.detectChanges();
@@ -169,12 +207,16 @@ export class Inventory implements OnInit {
         this.toast.success(`Inventory record deleted successfully.`);
         this.loadInventory();
         this.deleteTarget = null;
+        this.cdr.detectChanges();
       },
       error: (err) => {
-        const msg = err.status === 403 ? 'You do not have permission to delete this inventory record.'
-                  : err.status === 404 ? 'Inventory record not found — it may have already been deleted.'
-                  : 'Failed to delete inventory record.';
+        const msg = err.status === 403 ? 'You do not have permission to delete this. Please ask your manager.'
+                  : err.status === 404 ? 'This record was already deleted. Refreshing the list.'
+                  : err.status === 409 ? 'This record is in use and cannot be deleted.'
+                  : err.status === 0 ? 'Cannot reach the server. Check your internet and try again.'
+                  : 'We could not delete this record. Please try again.';
         this.toast.error(msg);
+        if (err.status === 404) this.loadInventory();
         this.deleteTarget = null;
         this.cdr.detectChanges();
       }

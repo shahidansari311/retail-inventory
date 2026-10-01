@@ -43,11 +43,13 @@ export class Dashboard implements OnInit {
   }
 
   fetchDashboardStats() {
+    this.loading = true;
+    this.error = '';
     this.dashboardService.getDashboardStats().subscribe({
       next: (data) => {
-        this.stats = data;
+        this.stats = data ?? {};
         // Check if there is actual data, else show empty state
-        this.hasData = data.totalProducts > 0 || data.totalSuppliers > 0 || data.totalCategories > 0;
+        this.hasData = (data?.totalProducts ?? 0) > 0 || (data?.totalSuppliers ?? 0) > 0 || (data?.totalCategories ?? 0) > 0 || (data?.totalOrders ?? 0) > 0;
         this.loading = false;
         this.cdr.detectChanges(); // Ensure UI updates
       },

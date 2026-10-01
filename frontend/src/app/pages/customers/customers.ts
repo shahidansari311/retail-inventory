@@ -33,9 +33,9 @@ export class Customers implements OnInit {
     this.loading = true;
     this.error = '';
     this.customerService.getAll().subscribe({
-      next: (data) => { this.customers = data; this.loading = false; this.cdr.detectChanges(); },
+      next: (data) => { this.customers = Array.isArray(data) ? data : []; this.loading = false; this.cdr.detectChanges(); },
       error: (err) => {
-        this.error = 'Failed to load customers.';
+        this.error = 'We could not load customers. Please try again.';
         this.loading = false;
         this.toast.error(this.error);
         this.cdr.detectChanges();
@@ -82,7 +82,7 @@ export class Customers implements OnInit {
         this.cdr.detectChanges();
       },
       error: (err) => {
-        this.formError = err.error?.message || 'Failed to save customer.';
+        this.formError = err.error?.message || 'We could not save this customer. Please check your inputs and try again.';
         this.toast.error(this.formError);
         this.saving = false;
         this.cdr.detectChanges();
@@ -109,9 +109,10 @@ export class Customers implements OnInit {
         this.toast.success('Customer deleted successfully.');
         this.loadCustomers();
         this.cancelDelete();
+        this.cdr.detectChanges();
       },
       error: (err) => {
-        this.toast.error('Failed to delete customer.');
+        this.toast.error(err.status===404?'This customer was already deleted. Refreshing the list.':err.status===403?'You do not have permission to delete customers.':'We could not delete this customer. Please try again.');
         this.cancelDelete();
       }
     });

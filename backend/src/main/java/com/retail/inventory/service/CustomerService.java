@@ -30,6 +30,10 @@ public class CustomerService {
         Optional<Customer> optional = repository.findById(id);
         if (optional.isPresent()) {
             Customer existing = optional.get();
+            existing.setName(entityDetails.getName());
+            existing.setEmail(entityDetails.getEmail());
+            existing.setPhone(entityDetails.getPhone());
+            existing.setAddress(entityDetails.getAddress());
             return repository.save(existing);
         }
         return null;

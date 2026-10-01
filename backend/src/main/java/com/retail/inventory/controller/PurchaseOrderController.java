@@ -33,8 +33,13 @@ public class PurchaseOrderController {
     @PutMapping("/{id}/status")
     public PurchaseOrder updateStatus(@PathVariable Long id, @RequestBody String status) {
         // Remove quotes if sent as JSON string
-        status = status.replace("\"", "");
+        status = status.replace("\"", "").trim();
         return service.updateStatus(id, status);
+    }
+
+    @PutMapping("/{id}")
+    public PurchaseOrder update(@PathVariable Long id, @RequestBody PurchaseOrder details) {
+        return service.update(id, details);
     }
 
     @DeleteMapping("/{id}")

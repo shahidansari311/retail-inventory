@@ -67,6 +67,7 @@ export class Register {
                   : err.error?.message || 'Registration failed. Please try again.';
         this.toast.error(msg);
         this.loading = false;
+        this.cdr.detectChanges();
       }
     });
   }

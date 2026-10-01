@@ -43,9 +43,12 @@ export class PurchaseOrders implements OnInit {
     this.loading = true;
     this.error = '';
     this.poService.getAll().subscribe({
-      next: (data) => { this.purchaseOrders = data; this.loading = false; this.cdr.detectChanges(); },
+      next: (data) => { this.purchaseOrders = Array.isArray(data) ? data : []; this.loading = false; this.cdr.detectChanges(); },
       error: (err) => {
-        this.error = 'Failed to load purchase orders.';
+        this.error = err.status === 401 ? 'Your session has expired. Please log in again.'
+                   : err.status === 403 ? 'You do not have permission to view purchase orders.'
+                   : err.status === 0 ? 'Cannot reach the server. Check your internet and try again.'
+                   : 'We could not load purchase orders. Please try again.';
         this.loading = false;
         this.toast.error(this.error);
         this.cdr.detectChanges();
@@ -70,10 +73,13 @@ export class PurchaseOrders implements OnInit {
 
   editPO(po: any) {
     this.editingPO = po;
-    this.formData = { ...po };
-    if (this.formData.orderDate && this.formData.orderDate.length > 10) {
-      this.formData.orderDate = this.formData.orderDate.slice(0, 10);
-    }
+    this.formData = {
+      supplierId: po.supplier?.id ?? po.supplierId ?? null,
+      orderDate: po.orderDate ? String(po.orderDate).slice(0, 10) : '',
+      status: po.status ?? 'PENDING',
+      totalAmount: po.totalAmount ?? 0,
+      items: po.items ?? []
+    };
     this.formError = '';
     this.showForm = true;
     this.cdr.detectChanges();
@@ -87,6 +93,12 @@ export class PurchaseOrders implements OnInit {
   }
 
   savePO() {
+    if (!this.formData.supplierId) {
+      this.formError = 'Please select a supplier.';
+      this.toast.warning(this.formError);
+      this.cdr.detectChanges();
+      return;
+    }
     this.saving = true;
     this.formError = '';
 
@@ -131,6 +143,16 @@ export class PurchaseOrders implements OnInit {
     });
   }
 
+  getSupplierLabel(po: any): string {
+    if (po?.supplier?.name) return `${po.supplier.name} (ID: ${po.supplier.id})`;
+    if (po?.supplier?.id != null) return `Supplier #${po.supplier.id}`;
+    if (po?.supplierId != null) {
+      const found = this.suppliers.find(s => s.id === po.supplierId);
+      return found ? `${found.name} (ID: ${found.id})` : `Supplier #${po.supplierId}`;
+    }
+    return '—';
+  }
+
   confirmDelete(po: any) {
     this.deleteTarget = po;
     this.deleteConfirming = true;
@@ -150,10 +172,17 @@ export class PurchaseOrders implements OnInit {
         this.toast.success('Purchase Order deleted successfully.');
         this.loadPOs();
         this.cancelDelete();
+        this.cdr.detectChanges();
       },
       error: (err) => {
-        this.toast.error('Failed to delete purchase order.');
+        const msg = err.status === 404 ? 'This purchase order was already deleted. Refreshing the list.'
+                  : err.status === 403 ? 'You do not have permission to delete purchase orders.'
+                  : err.status === 409 ? 'This purchase order is in use and cannot be deleted.'
+                  : 'We could not delete this purchase order. Please try again.';
+        this.toast.error(msg);
+        if (err.status === 404) this.loadPOs();
         this.cancelDelete();
+        this.cdr.detectChanges();
       }
     });
   }
